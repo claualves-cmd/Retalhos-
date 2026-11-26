@@ -115,7 +115,6 @@
     map.getPanes().overlayPane.appendChild(overlaySvg);
 
     map.on('move zoom zoomend moveend resize', scheduleOverlayDraw);
-    map.on('click', handleMapClick);
 
     const savedCover = localStorage.getItem('retalhos-cover') || 'portugal';
     if (savedCover === 'custom') {
@@ -150,20 +149,6 @@
       } else if (covers[key]) map.flyTo(covers[key].center, covers[key].zoom, { duration: .9 });
     });
     $('welcomeImport').addEventListener('click', () => photoInput.click());
-  }
-
-  function handleMapClick(event) {
-    if (!activePendingId) { mapHint.textContent = 'Seleciona uma fotografia sem GPS antes de marcar o local no mapa.'; return; }
-    const item = pending.find(p => p.id === activePendingId);
-    if (item) assignCoordinates([item], event.latlng.lat, event.latlng.lng, 'Local indicado no mapa');
-  }
-
-  async function assignCoordinates(items, lat, lng, locationName) {
-    for (const item of items) {
-      item.lat = lat; item.lng = lng; item.locationSource = 'manual'; item.locationName = locationName || ''; await dbPut(item);
-    }
-    activePendingId = null; selectedPlace = null; $('placeSearch').value = ''; $('placeResults').innerHTML = '';
-    await refreshAll(); toast(items.length === 1 ? 'Local guardado.' : `${items.length} fotografias colocadas no mesmo local.`);
   }
 
   function scheduleOverlayDraw() {
@@ -221,7 +206,10 @@
       const pointGroups = groupPhotosByPoint(items);
       let features = [{ geometry: municipality.geometry, items: pointGroups[0] }];
 
-      if (zoom >= 9 && pointGroups.length > 1) {
+      // A divisão depende do número de fotografias no concelho,
+      // e não do nível de zoom. Uma fotografia ocupa o concelho inteiro;
+      // duas ou mais produzem retalhos já no mapa geral.
+      if (pointGroups.length > 1) {
         const points = pointGroups.map(group => turf.point([group[0].lng, group[0].lat]));
         const cells = turf.voronoi(turf.featureCollection(points), { bbox: turf.bbox(municipality) });
         features = [];
@@ -308,42 +296,66 @@
       const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'pending-check'; checkbox.value = item.id;
       checkbox.addEventListener('change', updateBulkSelection); checkWrap.append(checkbox, document.createTextNode(' Selecionar'));
       const name = document.createElement('div'); name.className = 'pending-name'; name.textContent = item.name;
-      const button = document.createElement('button'); button.type = 'button'; button.textContent = item.id === activePendingId ? 'Agora toca no mapa' : 'Marcar no mapa';
-      button.addEventListener('click', () => { activePendingId = item.id; renderPending(); mapHint.textContent = `A localizar: ${item.name}.`; map.scrollIntoView?.({ behavior: 'smooth', block: 'center' }); });
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Selecionar para localizar';
+      button.addEventListener('click', () => {
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        document.querySelector('.place-search')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        $('placeSearch').focus({ preventScroll: true });
+      });
       card.append(img, checkWrap, name, button); list.append(card);
     });
   }
 
   function updateBulkSelection() {
     const selected = document.querySelectorAll('.pending-check:checked').length;
-    $('assignPlace').textContent = selectedPlace ? `Atribuir "${selectedPlace.name}" (${selected})` : 'Atribuir local às selecionadas';
-    $('assignPlace').disabled = !selectedPlace || selected === 0;
+    $('assignPlace').textContent = selected ? 'Confirmar local e colocar fotografias' : 'Atribuir local às selecionadas';
+    $('assignPlace').disabled = selected === 0;
   }
 
   async function searchPlace() {
     const query = $('placeSearch').value.trim(), resultsEl = $('placeResults');
-    resultsEl.innerHTML = ''; selectedPlace = null; updateBulkSelection();
+    resultsEl.innerHTML = '';
     if (query.length < 3) { resultsEl.textContent = 'Escreve pelo menos três letras.'; return; }
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&addressdetails=1&q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
       const results = await response.json();
       resultsEl.innerHTML = '';
       if (!results.length) { resultsEl.textContent = 'Não encontrei esse local.'; return; }
       results.forEach(result => {
-        const button = document.createElement('button'); button.type = 'button'; button.className = 'place-result'; button.textContent = result.display_name;
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'place-result location-suggestion';
+        const title = document.createElement('strong'); title.textContent = result.name || result.display_name.split(',')[0];
+        const detail = document.createElement('small'); detail.textContent = result.display_name;
+        button.append(title, detail);
         button.addEventListener('click', () => {
-          selectedPlace = { name: result.name || result.display_name.split(',')[0], displayName: result.display_name, lat: Number(result.lat), lng: Number(result.lon) };
-          [...resultsEl.querySelectorAll('.place-result')].forEach(el => el.classList.remove('selected')); button.classList.add('selected'); updateBulkSelection();
-          map.flyTo([selectedPlace.lat, selectedPlace.lng], 13, { duration: .8 });
+          [...resultsEl.querySelectorAll('.place-result')].forEach(el => el.classList.remove('selected')); button.classList.add('selected');
+          $('placeSearch').value = result.display_name;
+          $('placeSearch').dataset.lat = result.lat;
+          $('placeSearch').dataset.lng = result.lon;
+          $('placeSearch').dataset.displayName = result.display_name;
+          updateBulkSelection();
         }); resultsEl.append(button);
       });
     } catch (_) { resultsEl.textContent = 'Não foi possível pesquisar agora.'; }
   }
 
   async function assignSelectedPlace() {
+    const lat = Number($('placeSearch').dataset.lat), lng = Number($('placeSearch').dataset.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) { toast('Escolhe primeiro uma sugestão de local.'); return; }
     const ids = [...document.querySelectorAll('.pending-check:checked')].map(input => input.value);
     const items = pending.filter(item => ids.includes(item.id));
-    if (selectedPlace && items.length) await assignCoordinates(items, selectedPlace.lat, selectedPlace.lng, selectedPlace.displayName);
+    if (!items.length) { toast('Seleciona pelo menos uma fotografia.'); return; }
+    const db = await openDB();
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE, 'readwrite');
+      const store = transaction.objectStore(STORE);
+      items.forEach(item => {
+        item.lat = lat; item.lng = lng; item.locationSource = 'manual'; item.locationName = $('placeSearch').dataset.displayName || $('placeSearch').value;
+        store.put(item);
+      });
+      transaction.oncomplete = () => resolve(); transaction.onerror = () => reject(transaction.error); transaction.onabort = () => reject(transaction.error);
+    });
+    await refreshAll(); toast(items.length === 1 ? 'Fotografia colocada no mapa.' : `${items.length} fotografias colocadas no mapa.`);
   }
 
   async function deleteMemory(item) {
@@ -388,6 +400,9 @@
   });
 
   $('searchPlace').addEventListener('click', searchPlace);
+  $('placeSearch').addEventListener('input', () => {
+    delete $('placeSearch').dataset.lat; delete $('placeSearch').dataset.lng; delete $('placeSearch').dataset.displayName;
+  });
   $('placeSearch').addEventListener('keydown', event => { if (event.key === 'Enter') searchPlace(); });
   $('assignPlace').addEventListener('click', assignSelectedPlace);
   $('selectAllPending').addEventListener('change', event => { document.querySelectorAll('.pending-check').forEach(input => { input.checked = event.target.checked; }); updateBulkSelection(); });
@@ -397,10 +412,10 @@
     await dbClear(); objectUrls.forEach(url => { if (url.startsWith('blob:')) URL.revokeObjectURL(url); }); objectUrls.clear(); activePendingId = null; await refreshAll(); toast('Memórias apagadas.');
   });
 
-  window.addEventListener('beforeinstallprompt', event => { event.preventEvent?.(); deferredInstall = event; const btn = $('installBtn'); btn.hidden = false; btn.onclick = async () => { deferredInstall?.prompt(); deferredInstall = null; btn.hidden = true; }; });
+  window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); deferredInstall = event; const btn = $('installBtn'); btn.hidden = false; btn.onclick = async () => { await deferredInstall?.prompt(); deferredInstall = null; btn.hidden = true; }; });
 
   initMap(); refreshAll().catch(() => toast('Não foi possível abrir o arquivo.'));
-  loadMunicipalities().then(count => { mapHint.textContent = `Limites oficiais dos ${municipalities.length} municípios carregados.`; }).catch(() => { mapHint.textContent = 'Os limites oficiais não estão disponíveis neste momento.'; });
+  loadMunicipalities().then(() => { mapHint.textContent = `Limites oficiais dos ${municipalities.length} municípios carregados.`; }).catch(() => { mapHint.textContent = 'Os limites oficiais não estão disponíveis neste momento.'; });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
 })();

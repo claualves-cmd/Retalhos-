@@ -9,6 +9,7 @@
   let memories = [];
   let renderFrame = 0;
   let drawerObserver = null;
+  let deleteObserver = null;
 
   const style = document.createElement('style');
   style.textContent = `
@@ -18,25 +19,30 @@
     .map-bottomline,.map-legend{font-size:11px}
     .map-tool,.mode-switch button,.map-heading-actions button{border-radius:999px!important;box-shadow:none!important}
     .leaflet-tile-pane{filter:grayscale(.52) saturate(.58) brightness(1.09) sepia(.08)}
-    .retalhos-stack-marker,.retalhos-stack-marker.leaflet-div-icon{border:0!important;background:transparent!important;overflow:visible!important}
-    .retalhos-stack-hit{position:absolute;left:50%;top:50%;display:grid;place-items:center;min-width:44px;min-height:44px;transform:translate(-50%,-50%);cursor:pointer;touch-action:manipulation}
-    .retalhos-stack-art{position:relative;width:var(--patch-w,24px);height:var(--patch-h,18px);transition:width .18s ease,height .18s ease;filter:drop-shadow(0 1px 2px #17231e55)}
-    .retalhos-stack-art img{position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;object-fit:cover;border:1px solid #e8dfcb;border-radius:2px;background:#d9d2c1}
-    .retalhos-stack-art img:not(:last-child){transform:translate(var(--stack-x,1px),var(--stack-y,1px))}
-    .retalhos-stack-marker:hover .retalhos-stack-art,.retalhos-stack-marker:focus-visible .retalhos-stack-art{filter:drop-shadow(0 3px 5px #17231e80)}
-    .retalhos-stack-marker:focus-visible{outline:2px solid #315b4b;outline-offset:2px;border-radius:8px}
+    .retalhos-stack-marker,.retalhos-stack-marker.leaflet-div-icon{width:44px!important;height:44px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;overflow:visible!important}
+    .retalhos-stack-hit{position:absolute;inset:0;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .retalhos-stack-art{display:block;width:var(--patch-w,24px);height:var(--patch-h,18px);overflow:hidden;border:0;border-radius:1px;transition:width .18s ease,height .18s ease}
+    .retalhos-stack-art img{display:block;width:100%;height:100%;object-fit:cover;border:0;border-radius:1px;background:transparent;box-shadow:none}
+    .retalhos-stack-marker:hover .retalhos-stack-art,.retalhos-stack-marker:focus-visible .retalhos-stack-art{filter:brightness(1.08)}
+    .retalhos-stack-marker:focus-visible{outline:2px solid #315b4b;outline-offset:1px;border-radius:50%}
     .retalhos-stack-popup{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:7px;max-width:260px;max-height:230px;overflow:auto}
-    .retalhos-stack-popup button{display:block;min-width:0;padding:0;border:0;background:#fff;cursor:pointer;text-align:left}
-    .retalhos-stack-popup img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:4px}
-    .retalhos-stack-popup span{display:block;overflow:hidden;padding:4px 2px;color:#243b31;font:11px system-ui;text-overflow:ellipsis;white-space:nowrap}
-    .retalhos-stack-count{position:absolute;right:-5px;bottom:-5px;display:grid;place-items:center;min-width:14px;height:14px;padding:0 2px;border:1px solid #f4ead3;border-radius:9px;background:#315b4b;color:#fff;font:700 8px/1 system-ui}
+    .retalhos-stack-photo{position:relative;min-width:0}
+    .retalhos-stack-photo img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:4px}
+    .retalhos-stack-photo span{display:block;overflow:hidden;padding:4px 2px;color:#243b31;font:11px system-ui;text-overflow:ellipsis;white-space:nowrap}
+    .retalhos-stack-delete,.retalhos-pending-delete{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid #d8d3c5;border-radius:50%;background:#fffdf7;color:#743d32;font:20px/1 system-ui;cursor:pointer}
+    .retalhos-stack-delete{position:absolute;top:4px;right:4px;box-shadow:0 1px 5px #17231e55}
+    .retalhos-pending-delete{position:absolute;top:6px;right:6px;z-index:2}
     .welcome-panel[hidden]{display:none!important}
+    .memory-section{display:none!important}
+    #pendingSection:not([hidden]){display:block!important}
+    #pendingSection .pending-card{position:relative}
+    .retalhos-quick-actions #clearMemories{min-height:36px;padding:7px 10px;border:0;border-radius:999px;background:transparent;color:#6f786f;font:12px system-ui;text-decoration:underline;text-underline-offset:3px}
     .location-index-drawer{margin:18px 0 24px;border:1px solid #d8d3c5;border-radius:14px;background:#fffdf7;overflow:hidden}
     .location-index-drawer>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:12px 16px;cursor:pointer;list-style:none;color:#1e302a}
     .location-index-drawer>summary::-webkit-details-marker{display:none}
     .location-index-drawer>summary:after{content:'＋';color:#315b4b;font-size:20px}
     .location-index-drawer[open]>summary:after{content:'−'}
-    .location-index-drawer .location-index-heading{margin:0;align-items:center}
+    .location-index-drawer .location-index-heading{flex:1;margin:0;align-items:center}
     .location-index-drawer .location-index-kicker,.location-index-drawer .location-index-intro{display:none}
     .location-index-drawer .location-index-heading h3{font-size:20px;color:#1e302a}
     .location-index-drawer .location-index-total{border-color:#d8d3c5;color:#315b4b}
@@ -51,7 +57,7 @@
     .location-index-drawer .location-folder-preview img{border-color:#f8f5ed}
     .location-index-drawer .location-photo{background:#f4f0e6;border-color:#ded8ca}
     .location-index-drawer .location-photo span{color:#243b31}
-    .retalhos-photo-pin img,.retalhos-cluster{border-color:#e8dfcb!important;border-radius:3px!important}
+    .retalhos-photo-pin,.retalhos-cluster,.retalhos-cluster-wrap{display:none!important}
     @media(prefers-reduced-motion:reduce){.retalhos-stack-art{transition:none}}
   `;
   document.head.appendChild(style);
@@ -71,10 +77,10 @@
       request.onerror = () => reject(request.error);
     });
   }
-  async function updateMemory(memory) {
+  async function deleteMemory(id) {
     const db = await openDatabase();
     return new Promise((resolve, reject) => {
-      const request = db.transaction(STORE, 'readwrite').objectStore(STORE).put(memory);
+      const request = db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id);
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -86,10 +92,9 @@
     return url;
   }
   function getZoomSize(zoom) {
-    // Tiny, map-scale swatches when zoomed out; clear photo patches when close.
     const t = Math.max(0, Math.min(1, (zoom - 2) / 11));
-    const width = 3 + 47 * Math.pow(t, 1.32);
-    return { width: Math.round(width), height: Math.max(2, Math.round(width * .72)) };
+    const width = Math.round(3 + 47 * Math.pow(t, 1.32));
+    return { width, height: Math.max(2, Math.round(width * .72)) };
   }
   function groupByPoint(items) {
     const groups = new Map();
@@ -100,65 +105,78 @@
     });
     return [...groups.values()];
   }
+  function notify(message) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    window.setTimeout(() => toast.classList.remove('show'), 3200);
+  }
+  async function removePhoto(item) {
+    const name = item.name || 'esta fotografia';
+    if (!window.confirm(`Queres apagar "${name}"? Esta ação não pode ser desfeita.`)) return;
+    try {
+      await deleteMemory(item.id);
+      const url = imageUrls.get(item.id);
+      if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+      imageUrls.delete(item.id);
+      window.dispatchEvent(new Event('retalhos-data-changed'));
+      await refresh();
+      notify('Fotografia apagada.');
+    } catch (error) {
+      console.error('Não foi possível apagar a fotografia:', error);
+      notify('Não foi possível apagar a fotografia.');
+    }
+  }
   function makePopup(group) {
     const content = document.createElement('div');
     content.className = 'retalhos-stack-popup';
     group.forEach(item => {
-      const button = document.createElement('button');
-      button.type = 'button';
+      const card = document.createElement('div');
+      card.className = 'retalhos-stack-photo';
       const image = document.createElement('img');
       image.src = imageUrl(item);
       image.alt = item.name || 'Fotografia';
       const caption = document.createElement('span');
       caption.textContent = item.name || 'Fotografia';
-      button.append(image, caption);
-      button.addEventListener('click', () => {
-        if (item.locationName) caption.textContent = item.locationName;
-      });
-      content.appendChild(button);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'retalhos-stack-delete';
+      remove.textContent = '×';
+      remove.title = `Apagar ${item.name || 'fotografia'}`;
+      remove.setAttribute('aria-label', `Apagar ${item.name || 'fotografia'}`);
+      remove.addEventListener('click', event => { event.stopPropagation(); removePhoto(item); });
+      card.append(image, caption, remove);
+      content.appendChild(card);
     });
     return content;
   }
   function renderStacks() {
     if (!map || !stackLayer) return;
     stackLayer.clearLayers();
-    const zoom = map.getZoom();
-    const size = getZoomSize(zoom);
+    const size = getZoomSize(map.getZoom());
     groupByPoint(memories).forEach(group => {
-      const first = group[0];
-      const displayCount = zoom < 4 ? Math.min(group.length, 3) : Math.min(group.length, 5);
-      const images = group.slice(0, displayCount).map((item, index) => {
-        const img = document.createElement('img');
-        img.src = imageUrl(item);
-        img.alt = index === group.length - 1 ? (item.name || 'Retalho') : '';
-        img.style.setProperty('--stack-x', `${index ? Math.min(2, index) : 0}px`);
-        img.style.setProperty('--stack-y', `${index ? -Math.min(2, index) : 0}px`);
-        return img;
-      });
+      // A single, unframed top photograph represents the whole location stack.
+      const top = group[group.length - 1];
       const art = document.createElement('span');
       art.className = 'retalhos-stack-art';
       art.style.setProperty('--patch-w', `${size.width}px`);
       art.style.setProperty('--patch-h', `${size.height}px`);
-      images.forEach(image => art.appendChild(image));
-      if (group.length > 1) {
-        const count = document.createElement('span');
-        count.className = 'retalhos-stack-count';
-        count.textContent = group.length > 9 ? '9+' : String(group.length);
-        art.appendChild(count);
-      }
+      const image = document.createElement('img');
+      image.src = imageUrl(top);
+      image.alt = top.name || 'Retalho';
+      art.appendChild(image);
+
       const hit = document.createElement('span');
       hit.className = 'retalhos-stack-hit';
       hit.setAttribute('role', 'button');
       hit.setAttribute('tabindex', '0');
-      hit.setAttribute('aria-label', `${group.length} ${group.length === 1 ? 'fotografia' : 'fotografias'} neste local`);
+      hit.setAttribute('aria-label', `${group.length} ${group.length === 1 ? 'fotografia' : 'fotografias'} neste local; tocar para abrir a coleção`);
       hit.appendChild(art);
-      const icon = L.divIcon({
-        className: 'retalhos-stack-marker',
-        html: hit,
-        iconSize: [Math.max(44, size.width + 6), Math.max(44, size.height + 6)],
-        iconAnchor: [Math.max(22, (size.width + 6) / 2), Math.max(22, (size.height + 6) / 2)]
-      });
-      const marker = L.marker([first.lat, first.lng], { icon, keyboard: true, title: first.locationName || first.name || 'Retalho' });
+
+      const icon = L.divIcon({ className: 'retalhos-stack-marker', html: hit, iconSize: [44, 44], iconAnchor: [22, 22] });
+      const first = group[0];
+      const marker = L.marker([first.lat, first.lng], { icon, keyboard: true, title: top.locationName || top.name || 'Retalho' });
       marker.bindPopup(makePopup(group), { maxWidth: 280, autoPan: true });
       marker.on('click', () => {
         if (map.getZoom() < 5) map.flyTo([first.lat, first.lng], 8, { duration: .45 });
@@ -195,14 +213,10 @@
   function setupMap() {
     map = window.retalhosMap;
     if (!map || !window.L) return false;
+    if (stackLayer) return true;
     removeLegacyPins();
     stackLayer = L.layerGroup().addTo(map);
     map.on('zoomend moveend', scheduleRender);
-    map.on('layeradd', event => {
-      if (event.layer !== stackLayer) {
-        window.setTimeout(removeLegacyPins, 0);
-      }
-    });
     refresh();
     return true;
   }
@@ -229,39 +243,80 @@
     const section = document.querySelector('.location-index-section');
     if (section && !drawerObserver) {
       drawerObserver = new MutationObserver(setupDrawer);
-      drawerObserver.observe(section, { childList: true, subtree: false });
+      drawerObserver.observe(section, { childList: true });
     }
   }
-  async function backfillCaptureDate() {
-    try {
-      const all = await getMemories();
-      const cutoff = Date.now() - 90_000;
-      const recentCamera = all.filter(item => !item.takenAt && item.created >= cutoff && item.created <= Date.now() && item.locationSource !== 'pending');
-      for (const item of recentCamera) {
-        item.takenAt = item.created;
-        await updateMemory(item);
-      }
-    } catch (error) { console.warn('Não foi possível guardar a data da fotografia:', error); }
+  function addPendingDeleteButtons() {
+    document.querySelectorAll('#pendingList .pending-card').forEach(card => {
+      if (card.querySelector('.retalhos-pending-delete')) return;
+      const itemName = card.querySelector('.pending-name')?.textContent?.trim();
+      const item = memories.find(memory => memory.name === itemName && (!Number.isFinite(memory.lat) || !Number.isFinite(memory.lng)));
+      if (!item) return;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'retalhos-pending-delete';
+      button.textContent = '×';
+      button.title = `Apagar ${item.name || 'fotografia'}`;
+      button.setAttribute('aria-label', `Apagar ${item.name || 'fotografia'}`);
+      button.addEventListener('click', event => { event.stopPropagation(); removePhoto(item); });
+      card.appendChild(button);
+    });
   }
-  function bindCamera() {
-    document.addEventListener('click', event => {
-      if (event.target.closest('#retalhosQuickActions button:nth-child(2)')) {
-        window.retalhosCameraRequestedAt = Date.now();
+  function watchPendingList() {
+    const list = document.getElementById('pendingList');
+    if (list && !deleteObserver) {
+      deleteObserver = new MutationObserver(addPendingDeleteButtons);
+      deleteObserver.observe(list, { childList: true, subtree: true });
+    }
+    addPendingDeleteButtons();
+  }
+  function moveClearAllControl() {
+    const clear = document.getElementById('clearMemories');
+    const actions = document.getElementById('retalhosQuickActions');
+    if (clear && actions && clear.parentElement !== actions) actions.appendChild(clear);
+    if (clear) clear.textContent = 'Apagar tudo';
+  }
+  function bindCameraTimestamp() {
+    const input = document.getElementById('retalhosCameraInput');
+    if (!input || input.dataset.timestampBound) return;
+    input.dataset.timestampBound = 'true';
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const capturedAt = Date.now();
+      // app-controls imports asynchronously; wait for its record, without altering older photos.
+      for (let attempt = 0; attempt < 20; attempt++) {
+        await new Promise(resolve => window.setTimeout(resolve, 250));
+        const all = await getMemories().catch(() => []);
+        const match = all.find(item => item.name === file.name.replace(/\.[^.]+$/, '') && item.created >= capturedAt - 1500 && !item.takenAt);
+        if (!match) continue;
+        match.takenAt = capturedAt;
+        const db = await openDatabase();
+        await new Promise((resolve, reject) => {
+          const request = db.transaction(STORE, 'readwrite').objectStore(STORE).put(match);
+          request.onsuccess = resolve;
+          request.onerror = () => reject(request.error);
+        });
+        window.dispatchEvent(new Event('retalhos-data-changed'));
+        break;
       }
-    }, true);
-    window.addEventListener('retalhos-data-changed', () => { backfillCaptureDate(); refresh(); });
-    const cameraInput = document.getElementById('retalhosCameraInput');
-    cameraInput?.addEventListener('change', () => window.setTimeout(backfillCaptureDate, 500));
+    });
   }
   function init() {
-    bindCamera();
-    watchDrawer();
-    const tryMap = () => {
-      if (setupMap()) return;
-      window.setTimeout(tryMap, 150);
-    };
+    const tryMap = () => { if (!setupMap()) window.setTimeout(tryMap, 150); };
     tryMap();
-    window.setInterval(() => { refresh(); watchDrawer(); }, 2400);
+    watchDrawer();
+    watchPendingList();
+    moveClearAllControl();
+    bindCameraTimestamp();
+    window.addEventListener('retalhos-data-changed', () => { refresh(); addPendingDeleteButtons(); });
+    window.setInterval(() => {
+      refresh();
+      watchDrawer();
+      watchPendingList();
+      moveClearAllControl();
+      bindCameraTimestamp();
+    }, 2400);
     window.addEventListener('resize', scheduleRender);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });

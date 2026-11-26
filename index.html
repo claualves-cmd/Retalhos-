@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101a20">
+  <meta name="description" content="Portugal visto do espaço, transformado pelas tuas memórias.">
+  <title>Retalhos — Portugal feito de memórias</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="./estilos.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Retalhos, início">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span><strong>RETALHOS</strong><small>PORTUGAL, FEITO DE MEMÓRIAS</small></span>
+      </a>
+      <button id="installBtn" class="install-btn" hidden>Instalar app</button>
+    </header>
+
+    <section class="intro" id="inicio">
+      <p class="eyebrow">O TEU PORTUGAL. A TUA HISTÓRIA.</p>
+      <h1>Começamos no espaço.<br><em>Acabamos nas memórias.</em></h1>
+      <p class="intro-copy">Cada fotografia guarda um lugar. Cada lugar acrescenta um retalho à nossa história.</p>
+    </section>
+
+    <section class="map-section" aria-label="Mapa de Portugal">
+      <div class="map-heading">
+        <div><span class="live-dot"></span><span id="mapStatus">PORTUGAL VISTO DO ESPAÇO</span></div>
+        <button id="resetView" class="map-tool" type="button" title="Ver Portugal inteiro">⌖ <span>Recentrar</span></button>
+      </div>
+      <div id="map" role="application" aria-label="Mapa de satélite. Toca num local para o escolher."></div>
+      <div class="map-hint" id="mapHint">Toca no mapa para escolher o local de uma memória.</div>
+      <div class="map-legend"><span><i class="legend-outline"></i> Portugal continental</span><span><i class="legend-pin"></i> Memórias</span></div>
+    </section>
+
+    <section class="action-panel">
+      <div class="selection-copy"><span class="eyebrow">O PRÓXIMO RETALHO</span><strong id="selectedPlace">Escolhe um lugar no mapa</strong><small id="selectedCoords">A coordenada será guardada com a fotografia.</small></div>
+      <label class="add-button" for="photoInput"><span class="plus">＋</span><span>Adicionar fotografia</span></label>
+      <input id="photoInput" type="file" accept="image/*" multiple hidden>
+      <p class="small-note">Podes selecionar várias fotografias. Nesta versão, cada uma fica associada ao local escolhido no mapa.</p>
+    </section>
+
+    <section class="memory-section" id="memorias">
+      <div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div><button id="clearMemories" class="text-button" type="button">Limpar</button></div>
+      <div id="gallery" class="gallery"><div class="empty-state"><span class="empty-icon">▧</span><strong>Ainda não há retalhos.</strong><p>A primeira fotografia dá início à tua colcha.</p></div></div>
+    </section>
+
+    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 0.2</span></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="./app.js"></script>
+</body>
+</html>

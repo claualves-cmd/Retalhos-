@@ -35,8 +35,10 @@
     .location-folder-meta{color:#99a9a8;font-size:10px;letter-spacing:.08em;text-transform:uppercase}.location-folder-count{display:grid;place-items:center;flex:none;min-width:30px;height:30px;padding:0 7px;border:1px solid rgba(229,185,121,.25);border-radius:50px;color:#ebc98e;font-size:10px}
     .location-folder-chevron{flex:none;color:#b7d5c8;font-size:17px;transition:transform .2s}.location-folder[open] .location-folder-chevron{transform:rotate(180deg)}
     .location-folder-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:9px;padding:0 12px 13px;animation:locationReveal .24s ease both}
-    .location-photo{overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#101a20;transition:transform .2s}.location-photo:hover{transform:scale(1.025)}
+    .location-photo{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#101a20;transition:transform .2s}.location-photo:hover{transform:scale(1.025)}
     .location-photo img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#26383d}.location-photo span{display:block;overflow:hidden;padding:7px;color:#dfe4df;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+    .location-photo-delete{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(25,38,42,.92);color:#fff;font-size:17px;line-height:1;cursor:pointer;box-shadow:0 2px 8px #0007}
+    .location-photo-delete:hover,.location-photo-delete:focus-visible{border-color:#e7a69a;background:#8c4b42;outline:none}
     .location-index-empty{grid-column:1/-1;margin:0;padding:20px;border:1px dashed rgba(183,213,200,.24);border-radius:12px;color:#a6b3b4;font-size:12px;line-height:1.6;text-align:center}
     @keyframes locationReveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:560px){.location-index-heading{align-items:flex-start}.location-index-total{font-size:9px}.location-index-section{border-radius:16px}.location-index{grid-template-columns:1fr}}
@@ -93,6 +95,14 @@
       request.onerror = () => reject(request.error);
     });
   }
+  async function deleteMemory(id) {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const request = db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
   function municipalityName(lat, lng) {
     if (!window.turf || !municipalities.length) return '';
     const point = window.turf.point([lng, lat]);
@@ -121,7 +131,30 @@
     image.src = getImageUrl(memory);
     const title = document.createElement('span');
     title.textContent = memory.name || 'Fotografia';
-    card.append(image, title);
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'location-photo-delete';
+    remove.textContent = '×';
+    remove.title = `Apagar ${memory.name || 'fotografia'}`;
+    remove.setAttribute('aria-label', `Apagar ${memory.name || 'fotografia'}`);
+    remove.addEventListener('click', async event => {
+      event.stopPropagation();
+      if (!confirm(`Queres apagar a fotografia "${memory.name || 'sem nome'}"?`)) return;
+      try {
+        await deleteMemory(memory.id);
+        const url = imageUrls.get(memory.id);
+        if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+        imageUrls.delete(memory.id);
+        await renderIndex(true);
+        window.dispatchEvent(new Event('retalhos-data-changed'));
+      } catch (error) {
+        console.error('Não foi possível apagar a fotografia:', error);
+        alert('Não foi possível apagar esta fotografia.');
+      }
+    });
+
+    card.append(image, remove, title);
     return card;
   }
   function makePreview(photos) {

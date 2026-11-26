@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101d2b">
+  <meta name="description" content="Retalhos — cada lugar, uma memória.">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+  <title>Retalhos — O meu Portugal</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Retalhos, início">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48">
+            <path d="M8 8h14v14H8z" fill="#e6a56e"/>
+            <path d="M24 8h16v14H24z" fill="#6d9d91"/>
+            <path d="M8 24h14v16H8z" fill="#d46f5e"/>
+            <path d="M24 24h16v16H24z" fill="#d9c58c"/>
+            <path d="M8 8h32v32H8z" fill="none" stroke="#f6ead8" stroke-width="1.6" stroke-dasharray="2.5 2.5"/>
+          </svg>
+        </span>
+        <span class="brand-name">RETALHOS<span>cada lugar, uma memória</span></span>
+      </a>
+      <button class="menu-button" id="installBtn" type="button" hidden>Instalar <span>↧</span></button>
+    </header>
+
+    <main>
+      <section class="intro">
+        <p class="eyebrow">O TEU MAPA DE MEMÓRIAS</p>
+        <h1>O meu <em>Portugal.</em></h1>
+        <p class="intro-copy">Um país feito dos lugares onde estiveste.</p>
+      </section>
+
+      <section class="map-card" aria-label="Mapa artístico de Portugal">
+        <div class="map-atmosphere">
+          <div class="ocean-label">OCEANO ATLÂNTICO</div>
+          <div class="land-label">ESPANHA</div>
+          <div class="coast-glow"></div>
+          <svg class="portugal-map" viewBox="0 0 430 680" role="img" aria-label="Mapa ilustrado de Portugal continental preenchido com retalhos">
+            <defs>
+              <clipPath id="ptClip">
+                <path d="M137 20 L178 30 197 57 224 65 239 94 258 108 250 137 270 157 257 183 277 209 264 235 279 258 260 285 271 312 251 340 260 365 244 389 253 420 235 448 243 477 220 503 226 532 205 557 211 581 188 605 177 633 148 646 126 630 105 637 88 619 65 622 54 598 62 575 49 552 59 528 48 506 64 483 55 456 71 433 61 407 79 382 68 357 86 334 76 307 91 285 81 261 98 239 91 214 108 194 101 170 119 147 113 123 131 103 121 78 139 57 128 39 Z"/>
+              </clipPath>
+              <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#31586a"/>
+                <stop offset="1" stop-color="#142c3d"/>
+              </linearGradient>
+              <filter id="shadow" x="-30%" y="-20%" width="160%" height="150%">
+                <feDropShadow dx="8" dy="12" stdDeviation="10" flood-color="#07121d" flood-opacity=".55"/>
+              </filter>
+            </defs>
+            <g filter="url(#shadow)">
+              <g clip-path="url(#ptClip)">
+                <rect x="30" y="0" width="280" height="680" fill="#b7a27f"/>
+                <path d="M30 20 L310 0 310 150 30 190Z" fill="#778c79"/>
+                <path d="M30 190 L310 145 310 310 30 345Z" fill="#c39b70"/>
+                <path d="M30 345 L310 310 310 480 30 500Z" fill="#7e9b8d"/>
+                <path d="M30 500 L310 470 310 680 30 680Z" fill="#b58b6f"/>
+                <g class="patches">
+                  <path d="M110 12 L180 22 198 82 132 104 92 60Z" fill="#d1a06f"/>
+                  <path d="M180 22 L245 60 265 130 198 82Z" fill="#638b82"/>
+                  <path d="M92 60 L132 104 119 171 75 145Z" fill="#a85f50"/>
+                  <path d="M132 104 L198 82 221 154 119 171Z" fill="#d7c08e"/>
+                  <path d="M198 82 L265 130 250 205 221 154Z" fill="#b27d5f"/>
+                  <path d="M75 145 L119 171 130 235 80 250Z" fill="#6d8d83"/>
+                  <path d="M119 171 L221 154 205 238 130 235Z" fill="#c98d6e"/>
+                  <path d="M221 154 L250 205 270 270 205 238Z" fill="#7b9b90"/>
+                  <path d="M80 250 L130 235 145 315 88 335Z" fill="#d5b77d"/>
+                  <path d="M130 235 L205 238 215 315 145 315Z" fill="#a65e50"/>
+                  <path d="M205 238 L270 270 250 345 215 315Z" fill="#d6c18f"/>
+                  <path d="M88 335 L145 315 135 400 75 420Z" fill="#79958a"/>
+                  <path d="M145 315 L215 315 205 405 135 400Z" fill="#d1a16f"/>
+                  <path d="M215 315 L250 345 255 425 205 405Z" fill="#a76b58"/>
+                  <path d="M75 420 L135 400 150 480 80 500Z" fill="#c5aa7d"/>
+                  <path d="M135 400 L205 405 215 490 150 480Z" fill="#66877e"/>
+                  <path d="M205 405 L255 425 245 500 215 490Z" fill="#d7b77f"/>
+                  <path d="M80 500 L150 480 155 560 75 575Z" fill="#a85f50"/>
+                  <path d="M150 480 L215 490 205 570 155 560Z" fill="#d2a078"/>
+                  <path d="M215 490 L245 500 220 590 205 570Z" fill="#6d8e84"/>
+                  <path d="M75 575 L155 560 177 650 100 650Z" fill="#d4bd8c"/>
+                  <path d="M155 560 L205 570 190 650 177 650Z" fill="#a76756"/>
+                  <path d="M205 570 L220 590 200 660 190 650Z" fill="#d6a36f"/>
+                </g>
+                <g class="photo-grain">
+                  <path d="M75 20h210v640H60z" fill="url(#sea)" opacity=".08"/>
+                </g>
+                <g fill="none" stroke="#f5e8cf" stroke-width="2.2" stroke-dasharray="4 5" opacity=".9">
+                  <path d="M110 12 L180 22 198 82 132 104 92 60Z"/>
+                  <path d="M180 22 L245 60 265 130 198 82Z"/>
+                  <path d="M92 60 L132 104 119 171 75 145Z"/>
+                  <path d="M132 104 L198 82 221 154 119 171Z"/>
+                  <path d="M198 82 L265 130 250 205 221 154Z"/>
+                  <path d="M75 145 L119 171 130 235 80 250Z"/>
+                  <path d="M119 171 L221 154 205 238 130 235Z"/>
+                  <path d="M221 154 L250 205 270 270 205 238Z"/>
+                  <path d="M80 250 L130 235 145 315 88 335Z"/>
+                  <path d="M130 235 L205 238 215 315 145 315Z"/>
+                  <path d="M205 238 L270 270 250 345 215 315Z"/>
+                  <path d="M88 335 L145 315 135 400 75 420Z"/>
+                  <path d="M145 315 L215 315 205 405 135 400Z"/>
+                  <path d="M215 315 L250 345 255 425 205 405Z"/>
+                  <path d="M75 420 L135 400 150 480 80 500Z"/>
+                  <path d="M135 400 L205 405 215 490 150 480Z"/>
+                  <path d="M205 405 L255 425 245 500 215 490Z"/>
+                  <path d="M80 500 L150 480 155 560 75 575Z"/>
+                  <path d="M150 480 L215 490 205 570 155 560Z"/>
+                  <path d="M215 490 L245 500 220 590 205 570Z"/>
+                  <path d="M75 575 L155 560 177 650 100 650Z"/>
+                  <path d="M155 560 L205 570 190 650 177 650Z"/>
+                </g>
+              </g>
+              <path d="M137 20 L178 30 197 57 224 65 239 94 258 108 250 137 270 157 257 183 277 209 264 235 279 258 260 285 271 312 251 340 260 365 244 389 253 420 235 448 243 477 220 503 226 532 205 557 211 581 188 605 177 633 148 646 126 630 105 637 88 619 65 622 54 598 62 575 49 552 59 528 48 506 64 483 55 456 71 433 61 407 79 382 68 357 86 334 76 307 91 285 81 261 98 239 91 214 108 194 101 170 119 147 113 123 131 103 121 78 139 57 128 39 Z" fill="none" stroke="#f1e2c7" stroke-width="5" stroke-linejoin="round"/>
+            </g>
+            <g class="map-pin" transform="translate(177 348)">
+              <circle r="13" fill="#f3e5ca" opacity=".3"/>
+              <circle r="6" fill="#f7ead5" stroke="#243c42" stroke-width="2"/>
+            </g>
+          </svg>
+          <div class="map-caption"><span>39° 30′ N</span><span>PORTUGAL CONTINENTAL</span></div>
+        </div>
+        <div class="map-tools">
+          <button id="zoomOut" aria-label="Diminuir zoom">−</button>
+          <button id="zoomIn" aria-label="Aumentar zoom">+</button>
+          <button id="resetMap" aria-label="Repor mapa">↺</button>
+        </div>
+        <div class="map-hint">UM PAÍS, MILHARES DE MEMÓRIAS</div>
+      </section>
+
+      <section class="progress-panel">
+        <div class="progress-top">
+          <div>
+            <p class="eyebrow">A TUA EXPLORAÇÃO</p>
+            <div class="percent"><span id="percent">3</span><small>%</small></div>
+          </div>
+          <div class="progress-note">Portugal está à tua espera.<br><strong>Este é só o começo.</strong></div>
+        </div>
+        <div class="progress-track"><span style="width:3%"></span></div>
+        <div class="stats">
+          <div><strong>12</strong><span>retalhos</span></div>
+          <div><strong>8</strong><span>concelhos</span></div>
+          <div><strong>24</strong><span>memórias</span></div>
+        </div>
+      </section>
+
+      <section class="bottom-actions">
+        <button class="primary-button" id="addMemory">＋ Adicionar memórias</button>
+        <button class="secondary-button" id="galleryButton">Ver galeria <span>↗</span></button>
+      </section>
+      <p class="prototype-note">PRIMEIRO PROTÓTIPO · AS FOTOGRAFIAS E ESTATÍSTICAS SÃO DE DEMONSTRAÇÃO</p>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js"></script>
+</body>
+</html>

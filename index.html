@@ -10,7 +10,10 @@
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <link rel="stylesheet" href="./estilos.css?v=11">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="./estilos.css?v=12">
+  <link rel="stylesheet" href="./recursos.css?v=12">
 </head>
 <body>
   <main class="app-shell">
@@ -51,6 +54,21 @@
       <div class="map-legend"><span><i class="legend-photo"></i> Retalhos de fotografias</span><span><i class="legend-satellite"></i> Locais ainda por descobrir</span></div>
     </section>
 
+    <section class="workspace-tools" aria-label="Ferramentas da colcha">
+      <div class="mode-switch" aria-label="Modo do mapa">
+        <span>VER</span>
+        <button type="button" class="active" data-map-mode="colcha">Colcha</button>
+        <button type="button" data-map-mode="pins">Alfinetes</button>
+      </div>
+      <label class="year-filter">ANO
+        <select id="yearFilter"><option value="all">Todas as memórias</option></select>
+      </label>
+      <button id="createPoster" type="button">Criar poster</button>
+      <button id="exportBackup" type="button">Exportar cópia</button>
+      <button id="importBackupButton" type="button">Importar cópia</button>
+      <input id="importBackup" type="file" accept=".retalhos,.zip,application/zip" hidden>
+    </section>
+
     <section class="action-panel">
       <div class="selection-copy"><span class="eyebrow">A TUA COLCHA</span><strong id="selectedPlace">Importa as tuas memórias</strong><small id="selectedCoords">As fotografias com GPS encontram automaticamente o seu lugar.</small></div>
       <label class="add-button" for="photoInput"><span class="plus">＋</span><span>Importar fotografias</span></label>
@@ -61,6 +79,7 @@
     <section id="pendingSection" class="pending-section" hidden>
       <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
       <p class="pending-intro">Seleciona uma ou várias fotografias e procura o lugar onde foram tiradas.</p>
+      <div id="recentPlaces" class="recent-places"></div>
       <div class="place-search"><label for="placeSearch">LOCAL DA FOTOGRAFIA</label><div class="place-search-row"><input id="placeSearch" type="search" placeholder="Ex.: Praia das Maçãs, Sintra"><button id="searchPlace" type="button">Procurar</button></div><div id="placeResults" class="place-results"></div></div>
       <div class="pending-bulk-actions"><label><input id="selectAllPending" type="checkbox"> Selecionar todas</label><button id="assignPlace" type="button" disabled>Atribuir local às selecionadas</button></div>
       <div id="pendingList" class="pending-list"></div>
@@ -80,9 +99,13 @@
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="./retalho-markers.js"></script>
+  <script src="./retalhos-recursos.js"></script>
   <script src="./app.js"></script>
   <script src="./location-index.js"></script>
 </body>

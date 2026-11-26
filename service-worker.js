@@ -1,5 +1,5 @@
-const CACHE_NAME = 'retalhos-shell-v6';
-const APP_SHELL = ['./', './index.html', './estilos.css', './app.js', './retalho-markers.js', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'retalhos-shell-v7';
+const APP_SHELL = ['./', './index.html', './estilos.css', './app.js', './retalho-markers.js', './location-index.js', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });

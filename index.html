@@ -34,29 +34,20 @@
         <div class="map-heading-actions">
           <label class="cover-label" for="coverSelect">CAPA</label>
           <select id="coverSelect" aria-label="Escolher capa do mapa">
-            <option value="portugal">Portugal</option>
-            <option value="world">Mundo</option>
-            <option value="azores">Açores</option>
-            <option value="madeira">Madeira</option>
-            <option value="france">França</option>
-            <option value="morocco">Marrocos</option>
+            <option value="portugal">Portugal</option><option value="world">Mundo</option>
+            <option value="azores">Açores</option><option value="madeira">Madeira</option>
+            <option value="france">França</option><option value="morocco">Marrocos</option>
             <option value="custom">Vista atual</option>
           </select>
           <button id="saveCover" class="map-tool" type="button" title="Guardar a vista atual como capa">Guardar vista</button>
         </div>
       </div>
-
       <div id="welcomePanel" class="welcome-panel">
-        <strong>Portugal está cheio de histórias.</strong>
-        <span>Começa a preencher o mapa com as tuas.</span>
+        <strong>Portugal está cheio de histórias.</strong><span>Começa a preencher o mapa com as tuas.</span>
         <button id="welcomeImport" type="button">Adicionar as primeiras fotografias</button>
       </div>
-
       <div id="map" role="application" aria-label="Mapa de satélite. Arrasta para explorar e aproxima com dois dedos."></div>
-      <div class="map-bottomline">
-        <span id="mapHint">As zonas sem fotografias mostram o território por satélite.</span>
-        <button id="resetView" class="map-tool" type="button" title="Voltar à capa">⌖ <span>Ver capa</span></button>
-      </div>
+      <div class="map-bottomline"><span id="mapHint">As zonas sem fotografias mostram o território por satélite.</span><button id="resetView" class="map-tool" type="button" title="Voltar à capa">⌖ <span>Ver capa</span></button></div>
       <div class="map-legend"><span><i class="legend-photo"></i> Retalhos de fotografias</span><span><i class="legend-satellite"></i> Locais ainda por descobrir</span></div>
     </section>
 
@@ -70,24 +61,18 @@
     <section id="pendingSection" class="pending-section" hidden>
       <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
       <p class="pending-intro">Seleciona uma ou várias fotografias e procura o lugar onde foram tiradas. Também podes escolher uma fotografia e marcar o local diretamente no mapa.</p>
-      <div class="place-search">
-        <label for="placeSearch">LOCAL DA FOTOGRAFIA</label>
-        <div class="place-search-row">
-          <input id="placeSearch" type="search" placeholder="Ex.: Praia das Maçãs, Sintra" autocomplete="off">
-          <button id="searchPlace" type="button">Procurar local</button>
-        </div>
-        <div id="placeResults" class="place-results" aria-live="polite"></div>
-        <small id="placeSearchHelp">A pesquisa de locais usa dados do OpenStreetMap.</small>
-      </div>
-      <div class="pending-bulk-actions">
-        <label><input id="selectAllPending" type="checkbox"> Selecionar todas</label>
-        <button id="assignPlace" type="button" disabled>Atribuir local às selecionadas</button>
-      </div>
+      <div class="place-search"><label for="placeSearch">LOCAL DA FOTOGRAFIA</label><div class="place-search-row"><input id="placeSearch" type="search" placeholder="Ex.: Praia das Maçãs, Sintra" autocomplete="off"><button id="searchPlace" type="button">Procurar local</button></div><div id="placeResults" class="place-results" aria-live="polite"></div><small id="placeSearchHelp">A pesquisa de locais usa dados do OpenStreetMap.</small></div>
+      <div class="pending-bulk-actions"><label><input id="selectAllPending" type="checkbox"> Selecionar todas</label><button id="assignPlace" type="button" disabled>Atribuir local às selecionadas</button></div>
       <div id="pendingList" class="pending-list"></div>
     </section>
 
     <section class="memory-section" id="memorias">
       <div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div><button id="clearMemories" class="text-button" type="button">Apagar todas</button></div>
+      <section class="location-index-section" aria-labelledby="locationIndexTitle">
+        <h3 id="locationIndexTitle">Índice dos locais</h3>
+        <p>As fotografias localizadas ficam agrupadas por local, por ordem alfabética.</p>
+        <div id="locationIndex" class="location-index" aria-live="polite"></div>
+      </section>
       <div id="gallery" class="gallery"><div class="empty-state"><span class="empty-icon">▧</span><strong>Ainda não há retalhos.</strong><p>A primeira fotografia dá início à tua colcha.</p></div></div>
     </section>
 
@@ -99,5 +84,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
   <script src="./retalho-markers.js"></script>
   <script src="./app.js"></script>
+  <script src="./location-index.js"></script>
 </body>
 </html>

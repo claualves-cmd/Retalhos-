@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101a20">
+  <meta name="theme-color" content="#f4f0e6">
   <meta name="description" content="Portugal está cheio de histórias. Começa a preencher o mapa com as tuas.">
   <title>Retalhos — O mundo feito de memórias</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <link rel="stylesheet" href="./estilos.css">
+  <link rel="stylesheet" href="./estilos.css?v=11">
 </head>
 <body>
   <main class="app-shell">
@@ -47,12 +47,12 @@
         <button id="welcomeImport" type="button">Adicionar as primeiras fotografias</button>
       </div>
       <div id="map" role="application" aria-label="Mapa de satélite. Arrasta para explorar e aproxima com dois dedos."></div>
-      <div class="map-bottomline"><span id="mapHint">As zonas sem fotografias mostram o território por satélite.</span><button id="resetView" class="map-tool" type="button" title="Voltar à capa">⌖ <span>Ver capa</span></button></div>
+      <div class="map-bottomline"><span id="mapHint">As zonas sem fotografias mostram o território por satélite.</span><button id="resetView" class="map-tool" type="button" title="Voltar à capa">Voltar à capa</button></div>
       <div class="map-legend"><span><i class="legend-photo"></i> Retalhos de fotografias</span><span><i class="legend-satellite"></i> Locais ainda por descobrir</span></div>
     </section>
 
     <section class="action-panel">
-      <div class="selection-copy"><span class="eyebrow">A TUA COLCHA</span><strong id="selectedPlace">Importa as tuas memórias</strong><small id="selectedCoords">As fotografias com GPS encontram o seu lugar automaticamente.</small></div>
+      <div class="selection-copy"><span class="eyebrow">A TUA COLCHA</span><strong id="selectedPlace">Importa as tuas memórias</strong><small id="selectedCoords">As fotografias com GPS encontram automaticamente o seu lugar.</small></div>
       <label class="add-button" for="photoInput"><span class="plus">＋</span><span>Importar fotografias</span></label>
       <input id="photoInput" type="file" accept="image/*" multiple hidden>
       <p class="small-note">Podes selecionar muitas fotografias de uma só vez. As fotografias ficam guardadas neste dispositivo.</p>
@@ -60,14 +60,14 @@
 
     <section id="pendingSection" class="pending-section" hidden>
       <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
-      <p class="pending-intro">Seleciona uma ou várias fotografias e procura o lugar onde foram tiradas. Também podes escolher uma fotografia e marcar o local diretamente no mapa.</p>
-      <div class="place-search"><label for="placeSearch">LOCAL DA FOTOGRAFIA</label><div class="place-search-row"><input id="placeSearch" type="search" placeholder="Ex.: Praia das Maçãs, Sintra" autocomplete="off"><button id="searchPlace" type="button">Procurar local</button></div><div id="placeResults" class="place-results" aria-live="polite"></div><small id="placeSearchHelp">A pesquisa de locais usa dados do OpenStreetMap.</small></div>
+      <p class="pending-intro">Seleciona uma ou várias fotografias e procura o lugar onde foram tiradas.</p>
+      <div class="place-search"><label for="placeSearch">LOCAL DA FOTOGRAFIA</label><div class="place-search-row"><input id="placeSearch" type="search" placeholder="Ex.: Praia das Maçãs, Sintra"><button id="searchPlace" type="button">Procurar</button></div><div id="placeResults" class="place-results"></div></div>
       <div class="pending-bulk-actions"><label><input id="selectAllPending" type="checkbox"> Selecionar todas</label><button id="assignPlace" type="button" disabled>Atribuir local às selecionadas</button></div>
       <div id="pendingList" class="pending-list"></div>
     </section>
 
     <section class="memory-section" id="memorias">
-      <div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div><button id="clearMemories" class="text-button" type="button">Apagar todas</button></div>
+      <div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div><button id="clearMemories" class="text-button" title="Apagar todas as memórias">Apagar tudo</button></div>
       <section class="location-index-section" aria-labelledby="locationIndexTitle">
         <h3 id="locationIndexTitle">Índice dos locais</h3>
         <p>As fotografias localizadas ficam agrupadas por local, por ordem alfabética.</p>

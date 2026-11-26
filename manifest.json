@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Retalhos — Portugal feito de memórias",
+  "name": "Retalhos — O mundo feito de memórias",
   "short_name": "Retalhos",
-  "description": "Portugal visto do espaço, transformado pelas tuas memórias.",
+  "description": "O mundo visto do espaço, transformado pelas tuas memórias.",
   "lang": "pt-PT",
   "start_url": "./index.html",
   "scope": "./",

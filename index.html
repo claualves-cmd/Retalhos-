@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#101a20">
-  <meta name="description" content="Portugal visto do espaço, transformado pelas tuas memórias.">
-  <title>Retalhos — Portugal feito de memórias</title>
+  <meta name="description" content="O mundo visto do espaço, transformado pelas tuas memórias.">
+  <title>Retalhos — O mundo feito de memórias</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./icon-192.png">
@@ -17,32 +17,53 @@
     <header class="topbar">
       <a class="brand" href="#inicio" aria-label="Retalhos, início">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-        <span><strong>RETALHOS</strong><small>PORTUGAL, FEITO DE MEMÓRIAS</small></span>
+        <span><strong>RETALHOS</strong><small>O MUNDO FEITO DE MEMÓRIAS</small></span>
       </a>
       <button id="installBtn" class="install-btn" hidden>Instalar app</button>
     </header>
 
     <section class="intro" id="inicio">
-      <p class="eyebrow">O TEU PORTUGAL. A TUA HISTÓRIA.</p>
-      <h1>Começamos no espaço.<br><em>Acabamos nas memórias.</em></h1>
-      <p class="intro-copy">Cada fotografia guarda um lugar. Cada lugar acrescenta um retalho à nossa história.</p>
+      <p class="eyebrow">O TEU MUNDO. A TUA HISTÓRIA.</p>
+      <h1>O mundo visto do espaço.<br><em>O mundo feito de memórias.</em></h1>
+      <p class="intro-copy">Cada fotografia guarda um lugar. Cada lugar acrescenta um retalho à tua história.</p>
     </section>
 
-    <section class="map-section" aria-label="Mapa de Portugal">
+    <section class="map-section" aria-label="Mapa mundial de satélite e memórias">
       <div class="map-heading">
-        <div><span class="live-dot"></span><span id="mapStatus">PORTUGAL VISTO DO ESPAÇO</span></div>
-        <button id="resetView" class="map-tool" type="button" title="Ver Portugal inteiro">⌖ <span>Recentrar</span></button>
+        <div><span class="live-dot"></span><span id="mapStatus">O TEU MAPA DE MEMÓRIAS</span></div>
+        <div class="map-heading-actions">
+          <label class="cover-label" for="coverSelect">CAPA</label>
+          <select id="coverSelect" aria-label="Escolher capa do mapa">
+            <option value="portugal">Portugal</option>
+            <option value="world">Mundo</option>
+            <option value="azores">Açores</option>
+            <option value="madeira">Madeira</option>
+            <option value="france">França</option>
+            <option value="morocco">Marrocos</option>
+            <option value="custom">Vista atual</option>
+          </select>
+          <button id="saveCover" class="map-tool" type="button" title="Guardar a vista atual como capa">Guardar vista</button>
+        </div>
       </div>
-      <div id="map" role="application" aria-label="Mapa de satélite. Toca num local para o escolher."></div>
-      <div class="map-hint" id="mapHint">Toca no mapa para escolher o local de uma memória.</div>
-      <div class="map-legend"><span><i class="legend-outline"></i> Portugal continental</span><span><i class="legend-pin"></i> Memórias</span></div>
+      <div id="map" role="application" aria-label="Mapa mundial de satélite. Arrasta para explorar e aproxima com dois dedos."></div>
+      <div class="map-bottomline">
+        <span id="mapHint">Arrasta o mapa para explorar o mundo. Aproxima com dois dedos.</span>
+        <button id="resetView" class="map-tool" type="button" title="Voltar à capa">⌖ <span>Ver capa</span></button>
+      </div>
+      <div class="map-legend"><span><i class="legend-photo"></i> Retalhos de fotografias</span><span><i class="legend-satellite"></i> Locais ainda por descobrir</span></div>
     </section>
 
     <section class="action-panel">
-      <div class="selection-copy"><span class="eyebrow">O PRÓXIMO RETALHO</span><strong id="selectedPlace">Escolhe um lugar no mapa</strong><small id="selectedCoords">A coordenada será guardada com a fotografia.</small></div>
-      <label class="add-button" for="photoInput"><span class="plus">＋</span><span>Adicionar fotografia</span></label>
+      <div class="selection-copy"><span class="eyebrow">A TUA COLCHA</span><strong id="selectedPlace">Importa as tuas memórias</strong><small id="selectedCoords">As fotografias com GPS encontram o seu lugar automaticamente.</small></div>
+      <label class="add-button" for="photoInput"><span class="plus">＋</span><span>Importar fotografias</span></label>
       <input id="photoInput" type="file" accept="image/*" multiple hidden>
-      <p class="small-note">Podes selecionar várias fotografias. Nesta versão, cada uma fica associada ao local escolhido no mapa.</p>
+      <p class="small-note">Podes selecionar muitas fotografias de uma só vez. As originais ficam no teu dispositivo; o Retalhos guarda uma cópia de trabalho para criar a colcha.</p>
+    </section>
+
+    <section id="pendingSection" class="pending-section" hidden>
+      <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
+      <p class="pending-intro">Escolhe uma fotografia e toca no mapa no local onde foi tirada. Cada uma pode ter um lugar diferente.</p>
+      <div id="pendingList" class="pending-list"></div>
     </section>
 
     <section class="memory-section" id="memorias">
@@ -50,10 +71,11 @@
       <div id="gallery" class="gallery"><div class="empty-state"><span class="empty-icon">▧</span><strong>Ainda não há retalhos.</strong><p>A primeira fotografia dá início à tua colcha.</p></div></div>
     </section>
 
-    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 0.2</span></footer>
+    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 0.4</span></footer>
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

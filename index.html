@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <link rel="stylesheet" href="./estilos.css">
-  <link rel="stylesheet" href="./map-progressive.css">
+  <link rel="stylesheet" href="./location-search.css">
 </head>
 <body>
   <main class="app-shell">
@@ -53,36 +53,36 @@
         <button id="welcomeImport" type="button">Adicionar as primeiras fotografias</button>
       </div>
 
-      <div id="map" role="application" aria-label="Mapa de satélite. Arrasta para explorar e aproxima com dois dedos."></div>
+      <div id="map" role="application" aria-label="Mapa de satélite para explorar memórias."></div>
       <div class="map-bottomline">
-        <span id="mapHint">As zonas sem fotografias mostram o território por satélite.</span>
+        <span id="mapHint">Escreve o nome do local. Não precisas tocar no mapa.</span>
         <button id="resetView" class="map-tool" type="button" title="Voltar à capa">⌖ <span>Ver capa</span></button>
       </div>
       <div class="map-legend"><span><i class="legend-photo"></i> Retalhos de fotografias</span><span><i class="legend-satellite"></i> Locais ainda por descobrir</span></div>
     </section>
 
     <section class="action-panel">
-      <div class="selection-copy"><span class="eyebrow">A TUA COLCHA</span><strong id="selectedPlace">Importa as tuas memórias</strong><small id="selectedCoords">As fotografias com GPS encontram automaticamente o seu lugar.</small></div>
+      <div class="selection-copy"><span class="eyebrow">A TUA COLCHA</span><strong id="selectedPlace">Importa as tuas memórias</strong><small id="selectedCoords">O GPS localiza automaticamente. Na localização manual, procura o nome do local.</small></div>
       <label class="add-button" for="photoInput"><span class="plus">＋</span><span>Importar fotografias</span></label>
       <input id="photoInput" type="file" accept="image/*" multiple hidden>
-      <p class="small-note">Podes selecionar muitas fotografias de uma só vez. As fotografias ficam guardadas neste dispositivo.</p>
+      <p class="small-note">Podes selecionar muitas fotografias de uma só vez.</p>
     </section>
 
     <section id="pendingSection" class="pending-section" hidden>
       <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
-      <p class="pending-intro">Seleciona uma ou várias fotografias e procura o lugar onde foram tiradas. Também podes escolher uma fotografia e marcar o local diretamente no mapa.</p>
+      <p class="pending-intro">Escreve o nome do lugar. Escolhe uma sugestão e confirma. Não é necessário tocar no mapa.</p>
       <div class="place-search">
         <label for="placeSearch">LOCAL DA FOTOGRAFIA</label>
         <div class="place-search-row">
-          <input id="placeSearch" type="search" placeholder="Ex.: Praia das Maçãs, Sintra" autocomplete="off">
-          <button id="searchPlace" type="button">Procurar local</button>
+          <input id="placeSearch" type="search" placeholder="Ex.: Massamá, Sintra" autocomplete="off" enterkeyhint="search">
+          <button id="searchPlace" type="button">Pesquisar</button>
         </div>
         <div id="placeResults" class="place-results" aria-live="polite"></div>
-        <small id="placeSearchHelp">A pesquisa de locais usa dados do OpenStreetMap.</small>
+        <small id="placeSearchHelp">Sugestões fornecidas pelo OpenStreetMap/Nominatim.</small>
       </div>
       <div class="pending-bulk-actions">
         <label><input id="selectAllPending" type="checkbox"> Selecionar todas</label>
-        <button id="assignPlace" type="button" disabled>Atribuir local às selecionadas</button>
+        <button id="assignPlace" type="button" disabled>Confirmar local</button>
       </div>
       <div id="pendingList" class="pending-list"></div>
     </section>
@@ -99,5 +99,6 @@
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
   <script src="./app.js"></script>
+  <script src="./location-search.js"></script>
 </body>
 </html>

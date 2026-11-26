@@ -18,26 +18,14 @@
     imageUrls.set(item.id, url);
     return url;
   }
-
-  function createSvgElement(tag) {
-    return document.createElementNS(SVG_NS, tag);
-  }
-
+  function createSvgElement(tag) { return document.createElementNS(SVG_NS, tag); }
   function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>"']/g, char => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[char]));
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   }
-
   function pointInMunicipality(lat, lng, feature) {
     if (!window.turf) return false;
-    try {
-      return window.turf.booleanPointInPolygon(window.turf.point([lng, lat]), feature);
-    } catch (_) {
-      return false;
-    }
+    try { return window.turf.booleanPointInPolygon(window.turf.point([lng, lat]), feature); } catch (_) { return false; }
   }
-
   function groupByPoint(items) {
     const groups = new Map();
     for (const item of items) {
@@ -47,27 +35,22 @@
     }
     return [...groups.values()];
   }
-
   function geometryPath(geometry) {
     const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
     const paths = [];
-    for (const rings of polygons) {
-      for (const ring of rings) {
-        const points = ring.map(([lng, lat]) => {
-          const point = map.latLngToContainerPoint([lat, lng]);
-          return `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
-        });
-        if (points.length) paths.push(`M${points.join(' L')} Z`);
-      }
+    for (const rings of polygons) for (const ring of rings) {
+      const points = ring.map(([lng, lat]) => {
+        const point = map.latLngToContainerPoint([lat, lng]);
+        return `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+      });
+      if (points.length) paths.push(`M${points.join(' L')} Z`);
     }
     return paths.join(' ');
   }
-
   function addImagePattern(defs, id, item) {
     const pattern = createSvgElement('pattern');
     pattern.setAttribute('id', id);
     pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-
     const bounds = map.getBounds();
     const northWest = map.latLngToContainerPoint(bounds.getNorthWest());
     const southEast = map.latLngToContainerPoint(bounds.getSouthEast());
@@ -75,7 +58,6 @@
     pattern.setAttribute('y', Math.min(northWest.y, southEast.y));
     pattern.setAttribute('width', Math.max(1, Math.abs(southEast.x - northWest.x)));
     pattern.setAttribute('height', Math.max(1, Math.abs(southEast.y - northWest.y)));
-
     const image = createSvgElement('image');
     image.setAttribute('href', imageUrl(item));
     image.setAttribute('x', pattern.getAttribute('x'));
@@ -86,11 +68,9 @@
     pattern.appendChild(image);
     defs.appendChild(pattern);
   }
-
   function popupHtml(items) {
-    return items.map(item => `<div style="width:180px;margin-bottom:8px"><img src="${imageUrl(item).replace(/"/g, '&quot;')}" alt="${escapeHtml(item.name)}" style="display:block;width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:6px"><strong>${escapeHtml(item.name || 'Fotografia')}</strong>${item.locationName ? `<small style="display:block">${escapeHtml(item.locationName)}</small>` : ''}</div>`).join('');
+    return items.map(item => `<div style="width:180px;margin-bottom:8px"><img src="${imageUrl(item).replace(/"/g, '&quot;')}" alt="${escapeHtml(item.name)}" style="display:block;width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:6px"><strong>${escapeHtml(item.name || 'Fotografia')}</strong>${item.locationName ? `<small style="display:block">${escapeHtml(item.locationName.split(',')[0].trim())}</small>` : ''}</div>`).join('');
   }
-
   function makeRetalho(defs, feature, items, index) {
     if (!feature?.geometry || !items?.length) return;
     const patternId = `retalho-image-${index}`;
@@ -106,14 +86,11 @@
     path.addEventListener('click', event => {
       event.stopPropagation();
       const point = items[0];
-      window.L.popup({ maxWidth: 230, autoPan: true })
-        .setLatLng([point.lat, point.lng])
-        .setContent(`<div class="photo-popup">${popupHtml(items)}</div>`)
-        .openOn(map);
+      window.L.popup({ maxWidth: 230, autoPan: true }).setLatLng([point.lat, point.lng])
+        .setContent(`<div class="photo-popup">${popupHtml(items)}</div>`).openOn(map);
     });
     svg.appendChild(path);
   }
-
   function redraw(items) {
     if (!map || !svg) return;
     const size = map.getSize();
@@ -121,55 +98,43 @@
     svg.setAttribute('width', size.x);
     svg.setAttribute('height', size.y);
     svg.replaceChildren();
-
     if (!window.turf || !municipalities.length || !items.length) return;
     const byMunicipality = new Map();
     for (const item of items) {
       const municipality = municipalities.find(feature => pointInMunicipality(item.lat, item.lng, feature));
-      if (!municipality) continue;
-      if (!byMunicipality.has(municipality)) byMunicipality.set(municipality, []);
-      byMunicipality.get(municipality).push(item);
+      if (municipality) {
+        if (!byMunicipality.has(municipality)) byMunicipality.set(municipality, []);
+        byMunicipality.get(municipality).push(item);
+      }
     }
-
     const defs = createSvgElement('defs');
     svg.appendChild(defs);
     let index = 0;
     for (const [municipality, photos] of byMunicipality) {
-      const pointGroups = groupByPoint(photos);
-      if (pointGroups.length === 1) {
-        // Uma memória ocupa todo o polígono municipal, como definido para o protótipo.
-        makeRetalho(defs, municipality, pointGroups[0], index++);
-        continue;
-      }
+      const groups = groupByPoint(photos);
+      if (groups.length === 1) { makeRetalho(defs, municipality, groups[0], index++); continue; }
       try {
-        const points = pointGroups.map(group => window.turf.point([group[0].lng, group[0].lat]));
+        const points = groups.map(group => window.turf.point([group[0].lng, group[0].lat]));
         const cells = window.turf.voronoi(window.turf.featureCollection(points), { bbox: window.turf.bbox(municipality) });
         for (let i = 0; i < (cells?.features?.length || 0); i++) {
           const cell = cells.features[i];
           if (!cell) continue;
           try {
             const clipped = window.turf.intersect(window.turf.featureCollection([cell, municipality]));
-            if (clipped?.geometry) makeRetalho(defs, clipped, pointGroups[i], index++);
-          } catch (error) {
-            console.warn('Não foi possível recortar o retalho municipal:', error);
-          }
+            if (clipped?.geometry) makeRetalho(defs, clipped, groups[i], index++);
+          } catch (error) { console.warn('Não foi possível recortar o retalho municipal:', error); }
         }
       } catch (error) {
         console.warn('Não foi possível dividir o município em retalhos:', error);
-        // Mesmo que o recorte Voronoi falhe, não escondemos as memórias.
         makeRetalho(defs, municipality, photos, index++);
       }
     }
   }
-
+  function currentYear() { return document.getElementById('yearFilter')?.value || 'all'; }
   function scheduleRedraw() {
     if (timer) cancelAnimationFrame(timer);
-    timer = requestAnimationFrame(() => {
-      timer = null;
-      readMemories();
-    });
+    timer = requestAnimationFrame(() => { timer = null; readMemories(); });
   }
-
   function readDatabase() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, 2);
@@ -181,46 +146,41 @@
       request.onerror = () => reject(request.error);
     }));
   }
-
-  async function readMemories() {
+  async function readMemories(force = false) {
     if (!map || !svg) return;
     const all = await readDatabase();
-    const located = all.filter(item => Number.isFinite(item.lat) && Number.isFinite(item.lng) && item.lat >= -90 && item.lat <= 90 && item.lng >= -180 && item.lng <= 180);
-    const signature = located.map(item => `${item.id}:${item.lat}:${item.lng}:${item.locationName || ''}`).sort().join('|');
-    if (signature === lastSignature) return;
+    const year = currentYear();
+    const located = all.filter(item => Number.isFinite(item.lat) && Number.isFinite(item.lng) && item.lat >= -90 && item.lat <= 90 && item.lng >= -180 && item.lng <= 180 &&
+      (year === 'all' || (item.takenAt && new Date(item.takenAt).getFullYear() === Number(year))));
+    const signature = `${year}|${located.map(item => `${item.id}:${item.lat}:${item.lng}:${item.locationName || ''}`).sort().join('|')}`;
+    if (!force && signature === lastSignature) return;
     lastSignature = signature;
     redraw(located);
   }
-
   async function loadMunicipalities() {
     const response = await fetch(MUNICIPALITIES_URL, { headers: { Accept: 'application/geo+json' } });
     if (!response.ok) throw new Error(`DGT HTTP ${response.status}`);
     const data = await response.json();
     municipalities = (data.features || []).filter(feature => feature.geometry);
     if (!municipalities.length) throw new Error('DGT não devolveu polígonos municipais.');
-    await readMemories();
+    await readMemories(true);
   }
-
   if (window.L) {
     const originalMap = window.L.map;
     window.L.map = function (...args) {
       map = originalMap.apply(this, args);
-      // O SVG fica no contentor do mapa: as coordenadas Leaflet são relativas a este contentor.
       svg = createSvgElement('svg');
       svg.classList.add('retalhos-photo-overlay');
       Object.assign(svg.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', zIndex: '450', pointerEvents: 'none' });
       map.getContainer().appendChild(svg);
       map.on('moveend zoomend resize', scheduleRedraw);
+      window.retalhosMap = map;
       return map;
     };
   }
-
+  window.addEventListener('retalhos-data-changed', () => readMemories(true));
   window.addEventListener('load', () => {
-    // Evita o overlay antigo no pane Leaflet, cujas coordenadas ficavam deslocadas no telemóvel.
-    const style = document.createElement('style');
-    style.textContent = '.leaflet-overlay-pane .retalhos-svg{display:none!important}';
-    document.head.appendChild(style);
     loadMunicipalities().catch(error => console.error('Retalhos municipais:', error));
-    readMemories().catch(error => console.error('Memórias do mapa:', error));
+    readMemories(true).catch(error => console.error('Memórias do mapa:', error));
   });
 })();

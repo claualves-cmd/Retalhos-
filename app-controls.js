@@ -156,8 +156,8 @@
 
   function getMarkerDimensions(zoom){
     const z=Number.isFinite(zoom)?zoom:DEFAULT_ZOOM;
-    const t=Math.max(0,Math.min(1,(z-4)/11));
-    return Math.round(7+10*Math.pow(t,1.2));
+    const t=Math.max(0,Math.min(1,(z-5)/10));
+    return Math.round(10+8*Math.pow(t,1.1));
   }
 
   function markerIcon(item,zoom){
@@ -175,43 +175,35 @@
     return L.divIcon({className:'retalhos-photo-marker',html:node,iconSize:[size,size],iconAnchor:[size/2,size/2]});
   }
 
-  function clusterByZoom(items){
-    if(!map)return[];
-    const zoom=map.getZoom();
-    // Raio maior quando está afastado para juntar locais próximos; separa ao aproximar
-    const radiusPx=zoom>=14?10:zoom>=12?22:zoom>=10?40:zoom>=8?65:95;
-    const points=items.filter(m=>Number.isFinite(m.lat)&&Number.isFinite(m.lng));
-    const visited=new Set();
-    const clusters=[];
-    for(let i=0;i<points.length;i++){
-      if(visited.has(i))continue;
-      visited.add(i);
-      const pA=map.latLngToLayerPoint([points[i].lat,points[i].lng]);
-      const group=[points[i]];
-      for(let j=i+1;j<points.length;j++){
-        if(visited.has(j))continue;
-        const pB=map.latLngToLayerPoint([points[j].lat,points[j].lng]);
-        const dist=Math.hypot(pA.x-pB.x,pA.y-pB.y);
-        if(dist<=radiusPx){
-          visited.add(j);
-          group.push(points[j]);
-        }
-      }
-      clusters.push(group);
-    }
-    return clusters;
+  function groupExactCoordinates(items){
+    const groups=new Map();
+    items.filter(m=>Number.isFinite(m.lat)&&Number.isFinite(m.lng)).forEach(m=>{
+      const key=`${m.lat.toFixed(6)},${m.lng.toFixed(6)}`;
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push(m);
+    });
+    return [...groups.values()].map(list=>{
+      list.sort((a,b)=>(a.takenAt||a.created||0)-(b.takenAt||b.created||0));
+      return list;
+    });
   }
 
   function renderMarkers(){
     if(!map||!markerLayer)return;
     markerLayer.clearLayers();
     const zoom=map.getZoom();
-    const clusters=clusterByZoom(allMemories);
-    clusters.forEach(items=>{
+    const groups=groupExactCoordinates(allMemories).sort((a,b)=>{
+      const timeA=a[a.length-1]?.takenAt||a[a.length-1]?.created||0;
+      const timeB=b[b.length-1]?.takenAt||b[b.length-1]?.created||0;
+      return timeA-timeB;
+    });
+    groups.forEach((items,index)=>{
       const item=items[items.length-1];
-      const lat=items.reduce((s,x)=>s+x.lat,0)/items.length;
-      const lng=items.reduce((s,x)=>s+x.lng,0)/items.length;
-      const marker=L.marker([lat,lng],{icon:markerIcon(item,zoom),title:`Abrir ${placeName(item)}`});
+      const marker=L.marker([item.lat,item.lng],{
+        icon:markerIcon(item,zoom),
+        title:`Abrir ${placeName(item)}`,
+        zIndexOffset:(index+1)*10
+      });
       marker.on('click',()=>openArchive(item));
       markerLayer.addLayer(marker);
     });

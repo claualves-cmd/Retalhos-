@@ -156,11 +156,11 @@
 
   function getMarkerDimensions(zoom){
     const z=Number.isFinite(zoom)?zoom:DEFAULT_ZOOM;
-    const t=Math.max(0,Math.min(1,(z-2)/12));
-    return Math.round(12+9*Math.pow(t,1.1));
+    const t=Math.max(0,Math.min(1,(z-4)/11));
+    return Math.round(7+10*Math.pow(t,1.2));
   }
 
-  function markerIcon(item,count,zoom){
+  function markerIcon(item,zoom){
     const size=getMarkerDimensions(zoom);
     const image=document.createElement('img');
     image.src=imageUrl(item);
@@ -169,22 +169,17 @@
     image.style.height=`${size}px`;
     const node=document.createElement('div');
     node.className='retalhos-photo-marker';
-    node.style.width=`${size+4}px`;
-    node.style.height=`${size+4}px`;
+    node.style.width=`${size}px`;
+    node.style.height=`${size}px`;
     node.appendChild(image);
-    if(count>1){
-      const badge=document.createElement('span');
-      badge.className='retalhos-marker-count';
-      badge.textContent=String(count);
-      node.appendChild(badge);
-    }
-    return L.divIcon({className:'retalhos-photo-marker',html:node,iconSize:[size+4,size+4],iconAnchor:[(size+4)/2,(size+4)/2]});
+    return L.divIcon({className:'retalhos-photo-marker',html:node,iconSize:[size,size],iconAnchor:[size/2,size/2]});
   }
 
   function clusterByZoom(items){
     if(!map)return[];
     const zoom=map.getZoom();
-    const radiusPx=zoom>=13?14:zoom>=10?26:zoom>=7?38:52;
+    // Raio maior quando está afastado para juntar locais próximos; separa ao aproximar
+    const radiusPx=zoom>=14?10:zoom>=12?22:zoom>=10?40:zoom>=8?65:95;
     const points=items.filter(m=>Number.isFinite(m.lat)&&Number.isFinite(m.lng));
     const visited=new Set();
     const clusters=[];
@@ -216,7 +211,7 @@
       const item=items[items.length-1];
       const lat=items.reduce((s,x)=>s+x.lat,0)/items.length;
       const lng=items.reduce((s,x)=>s+x.lng,0)/items.length;
-      const marker=L.marker([lat,lng],{icon:markerIcon(item,items.length,zoom),title:`Abrir ${placeName(item)}`});
+      const marker=L.marker([lat,lng],{icon:markerIcon(item,zoom),title:`Abrir ${placeName(item)}`});
       marker.on('click',()=>openArchive(item));
       markerLayer.addLayer(marker);
     });

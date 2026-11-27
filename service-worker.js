@@ -1,4 +1,4 @@
-const CACHE_NAME='retalhos-shell-v24';
+const CACHE_NAME='retalhos-shell-v26';
 const APP_SHELL=['./','./index.html','./estilos.css','./app-controls.js','./location-stats.js','./location-index.js','./manifest.json','./icon-192.svg','./icon-512.svg'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE_NAME);await Promise.allSettled(APP_SHELL.map(path=>cache.add(path)));await self.skipWaiting();})()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(key=>key.startsWith('retalhos-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)));await self.clients.claim();})()));

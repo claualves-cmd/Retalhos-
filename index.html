@@ -10,42 +10,49 @@
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <link rel="stylesheet" href="./estilos.css?v=18">
+  <link rel="stylesheet" href="./estilos.css?v=19">
   <style>
     .topbar-tagline{max-width:440px;margin:0;color:#6f786f;font:italic 15px/1.45 Georgia,"Times New Roman",serif;text-align:right}
     .map-status-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid #d8d3c5;background:#fffdf7;font-size:11px;font-weight:900;letter-spacing:.08em}
     .map-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px;border-top:1px solid #d8d3c5;background:#fffdf7}
-    .map-actions button{min-height:40px;padding:8px 14px;border:1px solid #c9c1ae;border-radius:999px;background:#fffdf7;color:#243b31;font-weight:700}
+    .map-actions button{min-height:42px;padding:9px 13px;border:1px solid #c9c1ae;border-radius:999px;background:#fffdf7;color:#243b31;font-weight:700;touch-action:manipulation}
     .map-actions .primary{border-color:#315b4b;background:#315b4b;color:#fff}
-    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-    .stat-card{padding:12px;border:1px solid #d8d3c5;border-radius:12px;background:#f8f5ed}
-    .stat-card strong{display:block;font:600 24px Georgia,serif;color:#315b4b}
-    .stat-card span{font-size:11px;color:#6f786f}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+    .stat-card{padding:11px;border:1px solid #d8d3c5;border-radius:12px;background:#f8f5ed}
+    .stat-card strong{display:block;font:600 24px Georgia,serif;color:#315b4b}.stat-card span{font-size:11px;color:#6f786f}
     .location-index-section{margin:18px 0 24px;border:1px solid #d8d3c5;border-radius:14px;background:#fffdf7;overflow:hidden}
-    .archive-drawer>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;cursor:pointer;list-style:none;color:#1e302a;font:600 18px Georgia,serif}
-    .archive-drawer>summary::-webkit-details-marker{display:none}
-    .archive-drawer>summary:after{content:'＋';color:#315b4b;font:22px system-ui}
-    .archive-drawer[open]>summary:after{content:'−'}
-    .archive-content{padding:0 14px 14px;border-top:1px solid #ece7da}
-    #pendingSection[hidden],#memorias[hidden]{display:none!important}
+    .archive-drawer>summary,.pending-drawer>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;cursor:pointer;list-style:none;color:#1e302a;font:600 18px Georgia,serif}
+    .archive-drawer>summary::-webkit-details-marker,.pending-drawer>summary::-webkit-details-marker{display:none}
+    .archive-drawer>summary:after,.pending-drawer>summary:after{content:'＋';color:#315b4b;font:22px system-ui}
+    .archive-drawer[open]>summary:after,.pending-drawer[open]>summary:after{content:'−'}
+    .archive-content,.pending-drawer-content{padding:0 14px 14px;border-top:1px solid #ece7da}
+    .pending-drawer{margin:18px 0;border:1px solid #d8d3c5;border-radius:14px;background:#fffdf7;overflow:hidden}
+    .pending-count-label{color:#6f786f;font:12px system-ui}
+    .pending-select-all{display:flex;align-items:center;gap:8px;padding:12px 0;color:#315b4b;font:13px system-ui}
+    .pending-location-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:8px 0 12px}
+    .pending-location-tools input{min-width:0;padding:11px;border:1px solid #d8d3c5;border-radius:9px;background:#fff;color:#243b31}
+    .pending-location-tools button,.pending-place-result{padding:10px 12px;border:1px solid #c9c1ae;border-radius:9px;background:#f8f5ed;color:#243b31}
+    .pending-place-result{display:block;width:100%;margin:5px 0;text-align:left}
+    .pending-bulk-assign{margin-top:8px;background:#315b4b!important;color:white!important}
+    .pending-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+    .pending-card{position:relative;overflow:hidden;border:1px solid #d8d3c5;border-radius:10px;background:#fff}
+    .pending-card img{display:block;width:100%;height:115px;object-fit:cover}
+    .pending-card label{display:flex;align-items:center;gap:6px;padding:8px;font:12px system-ui;overflow-wrap:anywhere}
+    .onboarding{margin:18px 0;padding:16px;border:1px solid #e4d7bd;border-radius:14px;background:#fffaf0;color:#243b31}
+    .onboarding h2{margin:0 0 8px;font:20px Georgia,serif}.onboarding ol{margin:0;padding-left:22px;font:13px/1.6 system-ui}
+    .cover-note{flex-basis:100%;margin:0;color:#6f786f;font:11px/1.4 system-ui}
     .retalhos-photo-marker{border:0!important;background:transparent!important;width:28px!important;height:28px!important;margin:0!important}
     .retalhos-photo-marker img{display:block;width:24px;height:24px;border:1px solid #f4ead3;border-radius:3px;object-fit:cover;box-shadow:0 1px 4px #17231e80}
-    .photo-stack-popup{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;max-width:270px;max-height:300px;overflow:auto}
-    .photo-stack-popup img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:5px}
-    .photo-stack-popup span{display:block;overflow:hidden;padding:4px 1px;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
-    @media(max-width:620px){.topbar-tagline{max-width:48%;font-size:12px;line-height:1.35}.topbar{gap:8px}.stats-grid{gap:7px}.stat-card{padding:9px}}
+    .archive-place.archive-highlight{outline:2px solid #b66f55;outline-offset:2px}
+    @media(max-width:620px){.topbar-tagline{max-width:48%;font-size:12px;line-height:1.35}.topbar{gap:8px}.stats-grid{gap:7px}.stat-card{padding:9px}.map-actions button{flex:1 1 42%;min-height:44px}.pending-location-tools{grid-template-columns:1fr}.pending-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Retalhos, início">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-        <span><strong>RETALHOS</strong><small>O MUNDO FEITO DE MEMÓRIAS</small></span>
-      </a>
+      <a class="brand" href="#inicio" aria-label="Retalhos, início"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><strong>RETALHOS</strong><small>O MUNDO FEITO DE MEMÓRIAS</small></span></a>
       <p class="topbar-tagline">Cada lugar deixa um traço. Cada fotografia guarda o caminho.</p>
     </header>
-
     <section class="retalhos-layout" id="inicio">
       <div class="map-column">
         <section class="map-section" aria-label="Mapa de satélite e memórias">
@@ -53,47 +60,54 @@
           <div class="map-status-bar"><span class="live-dot"></span><strong id="mapStatus">PORTUGAL · OS TEUS RETALHOS</strong></div>
           <div class="map-actions" aria-label="Ações do mapa">
             <button id="saveCover" type="button">Guardar esta vista como capa</button>
+            <button id="resetCover" type="button">Repor vista guardada</button>
             <button id="galleryImport" class="primary" type="button">＋ Galeria</button>
             <button id="cameraImport" type="button">Câmara</button>
+            <button id="exportBackup" type="button">Exportar cópia</button>
+            <button id="importBackup" type="button">Importar cópia</button>
           </div>
+          <p class="cover-note">A capa guarda o centro e o zoom do mapa neste dispositivo.</p>
         </section>
         <input id="photoInput" type="file" accept="image/*" multiple hidden>
         <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden>
-
-        <section id="pendingSection" class="pending-section" hidden>
-          <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
-          <div id="pendingList" class="pending-list"></div>
+        <input id="backupInput" type="file" accept="application/json,.json" hidden>
+        <section id="onboarding" class="onboarding" hidden aria-labelledby="onboardingTitle">
+          <h2 id="onboardingTitle">A tua viagem começa aqui</h2>
+          <ol><li>Importa fotografias pela Galeria ou tira uma com a Câmara.</li><li>Confirma o local; as fotografias sem GPS podem ser localizadas em conjunto.</li><li>Explora os retalhos no mapa e abre as gavetas por lugar.</li></ol>
         </section>
-
-        <section class="location-index-section" aria-label="Arquivo de fotografias por lugar">
-          <details class="archive-drawer" id="archiveDrawer">
-            <summary>O teu arquivo, por lugares</summary>
-            <div class="archive-content"><div id="locationIndex"></div></div>
+        <section id="pendingSection" class="pending-drawer-section" hidden>
+          <details class="pending-drawer" id="pendingDrawer">
+            <summary><span>Fotografias sem localização</span><span class="pending-count-label"><span id="pendingCount">0</span> por localizar</span></summary>
+            <div class="pending-drawer-content">
+              <label class="pending-select-all"><input type="checkbox" id="selectAllPending"> Selecionar todas</label>
+              <div class="pending-location-tools"><input id="pendingPlaceSearch" type="search" placeholder="Procurar concelho ou lugar"><button id="searchPendingPlace" type="button">Procurar local</button></div>
+              <div id="pendingPlaceResults"></div>
+              <button id="assignPendingPlace" class="pending-bulk-assign" type="button" disabled>Atribuir local às selecionadas</button>
+              <div id="pendingList" class="pending-list"></div>
+            </div>
           </details>
         </section>
+        <section class="location-index-section" aria-label="Arquivo de fotografias por lugar">
+          <details class="archive-drawer" id="archiveDrawer"><summary>O teu arquivo, por lugares</summary><div class="archive-content"><div id="locationIndex"></div></div></details>
+        </section>
       </div>
-
       <aside class="achievements-panel" aria-labelledby="achievementsTitle">
-        <h2 id="achievementsTitle">Os teus caminhos</h2>
-        <p class="achievements-intro">Cada concelho visitado acrescenta um novo retalho à tua história.</p>
+        <h2 id="achievementsTitle">Os teus caminhos</h2><p class="achievements-intro">Cada concelho visitado acrescenta um novo retalho à tua história.</p>
         <div class="stats-grid" aria-live="polite">
           <div class="stat-card"><strong id="municipalityCount">—</strong><span>concelhos visitados</span></div>
           <div class="stat-card"><strong id="districtCount">—</strong><span>distritos visitados</span></div>
+          <div class="stat-card"><strong id="locatedPhotoCount">0</strong><span>fotografias localizadas</span></div>
+          <div class="stat-card"><strong id="unlocatedPhotoCount">0</strong><span>fotografias por localizar</span></div>
         </div>
       </aside>
     </section>
-
-    <section class="memory-section" id="memorias" hidden>
-      <div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div></div>
-      <div id="gallery" class="gallery-grid"></div>
-    </section>
-    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 0.9</span></footer>
+    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 1.0</span></footer>
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
-  <script src="./app-controls.js?v=4"></script>
-  <script src="./location-index.js?v=4"></script>
+  <script src="./app-controls.js?v=5"></script>
+  <script src="./location-index.js?v=5"></script>
 </body>
 </html>

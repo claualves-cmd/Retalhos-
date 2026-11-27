@@ -1,62 +1,17 @@
 (() => {
   'use strict';
-  const DB_NAME='retalhos-db', STORE='memories';
-  const URL_MUNICIPALITIES='https://ogcapi.dgterritorio.gov.pt/collections/municipios/items?f=json&limit=500&crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84';
-  const root=document.getElementById('locationIndex'); if(!root)return;
-  const style=document.createElement('style');
-  style.textContent=`
-    .archive-search{width:100%;margin:12px 0;padding:11px 13px;border:1px solid #d8d3c5;border-radius:9px;background:#f8f5ed;color:#243b31;font:13px system-ui}
-    .archive-place{margin:0 0 9px;border:1px solid #e4dfd3;border-radius:12px;background:#f8f5ed;overflow:hidden}
-    .archive-place>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px;cursor:pointer;list-style:none;color:#243b31;font:17px Georgia,serif}
-    .archive-place>summary::-webkit-details-marker{display:none}.archive-place>summary:after{content:'＋';color:#315b4b;font:20px system-ui}.archive-place[open]>summary:after{content:'−'}
-    .archive-count{color:#6f786f;font:11px system-ui}.archive-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:9px;padding:0 10px 12px}
-    .archive-photo{min-width:0;overflow:hidden;border:1px solid #ded8ca;border-radius:8px;background:#fffdf7}.archive-photo img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}.archive-photo span{display:block;overflow:hidden;padding:6px;color:#243b31;font:11px system-ui;text-overflow:ellipsis;white-space:nowrap}
-    .archive-empty{padding:16px;color:#6f786f;font:13px/1.5 system-ui}.archive-place.archive-highlight{outline:2px solid #b66f55;outline-offset:2px;animation:archivePulse 1.1s ease-out}
-    @keyframes archivePulse{0%{background:#f3dfc5}100%{background:#f8f5ed}}
-  `;
-  document.head.appendChild(style);
-  let municipalities=[],query=''; const imageUrls=new Map();
-  function openDatabase(){return new Promise((resolve,reject)=>{const request=indexedDB.open(DB_NAME,2);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
-  async function getMemories(){const db=await openDatabase();return new Promise((resolve,reject)=>{const request=db.transaction(STORE,'readonly').objectStore(STORE).getAll();request.onsuccess=()=>resolve(request.result||[]);request.onerror=()=>reject(request.error);});}
-  function normalize(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('pt');}
-  function areaName(lat,lng){if(!window.turf||!municipalities.length)return'';const point=turf.point([lng,lat]);const feature=municipalities.find(area=>{try{return turf.booleanPointInPolygon(point,area);}catch(_){return false;}});const p=feature?.properties||{};return p.municipio||p.MUNICIPIO||p.nome||p.NOME||p.name||p.NAME||'';}
-  function placeName(item){const explicit=String(item.locationName||'').trim();if(explicit&&explicit!=='Local indicado no mapa')return explicit.split(',')[0].trim();return areaName(item.lat,item.lng)||explicit||'Outros locais';}
+  const DB_NAME='retalhos-db',STORE='memories',URL_MUNICIPALITIES='https://ogcapi.dgterritorio.gov.pt/collections/municipios/items?f=json&limit=500&crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84',root=document.getElementById('locationIndex');
+  if(!root)return;
+  const style=document.createElement('style');style.textContent=`.archive-search{width:100%;margin:12px 0;padding:11px 13px;border:1px solid #d8d3c5;border-radius:9px;background:#f8f5ed;color:#243b31;font:13px system-ui}.archive-place{margin:0 0 9px;border:1px solid #e4dfd3;border-radius:12px;background:#f8f5ed;overflow:hidden}.archive-place>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px;cursor:pointer;list-style:none;color:#243b31;font:17px Georgia,serif}.archive-place>summary::-webkit-details-marker{display:none}.archive-place>summary:after{content:'＋';color:#315b4b;font:20px system-ui}.archive-place[open]>summary:after{content:'−'}.archive-count{color:#6f786f;font:11px system-ui}.archive-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:9px;padding:0 10px 12px}.archive-photo{min-width:0;overflow:hidden;border:1px solid #ded8ca;border-radius:8px;background:#fffdf7}.archive-photo img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}.archive-photo span{display:block;overflow:hidden;padding:6px;color:#243b31;font:11px system-ui;text-overflow:ellipsis;white-space:nowrap}.archive-empty{padding:16px;color:#6f786f;font:13px/1.5 system-ui}.archive-place.archive-highlight{outline:2px solid #b66f55;outline-offset:2px}`;document.head.appendChild(style);
+  let municipalities=[],query='';const imageUrls=new Map();
+  const norm=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('pt').replace(/\s+/g,' ');
+  function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,2);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+  async function getMemories(){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});}
+  function areaName(lat,lng){if(!window.turf||!municipalities.length)return'';const p=turf.point([lng,lat]),f=municipalities.find(x=>{try{return turf.booleanPointInPolygon(p,x);}catch(_){return false;}}),a=f?.properties||{};return a.municipio||a.MUNICIPIO||a.nome||a.NOME||a.name||a.NAME||'';}
+  function placeName(item){const text=String(item.locationName||'').trim();if(text&&text!=='Local indicado no mapa')return text.split(',')[0].trim();return(Number.isFinite(item.lat)&&Number.isFinite(item.lng)?areaName(item.lat,item.lng):'')||text||'Outros locais';}
   function imageUrl(item){if(!imageUrls.has(item.id))imageUrls.set(item.id,item.blob instanceof Blob?URL.createObjectURL(item.blob):(item.image||''));return imageUrls.get(item.id);}
-  function openMatchingPlace(event){
-    const wanted=normalize(event.detail?.location); if(!wanted)return;
-    const drawer=document.getElementById('archiveDrawer'); if(drawer)drawer.open=true;
-    requestAnimationFrame(()=>{
-      const places=[...root.querySelectorAll('.archive-place')];
-      const match=places.find(details=>normalize(details.dataset.place)===wanted);
-      if(!match){document.querySelector('.location-index-section')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
-      match.open=true; match.classList.remove('archive-highlight'); void match.offsetWidth; match.classList.add('archive-highlight');
-      match.scrollIntoView({behavior:'smooth',block:'center'});
-      setTimeout(()=>match.classList.remove('archive-highlight'),1300);
-    });
-  }
-  async function render(){
-    try{
-      const memories=(await getMemories()).filter(item=>Number.isFinite(item.lat)&&Number.isFinite(item.lng)),groups=new Map();
-      memories.forEach(item=>{const name=placeName(item);if(!groups.has(name))groups.set(name,[]);groups.get(name).push(item);});
-      root.replaceChildren();
-      const search=document.createElement('input'); search.className='archive-search'; search.type='search'; search.placeholder='Procurar um lugar ou uma fotografia'; search.setAttribute('aria-label','Procurar no arquivo por lugares'); search.value=query;
-      search.addEventListener('input',()=>{query=search.value.trim().toLocaleLowerCase('pt');render();}); root.appendChild(search);
-      const entries=[...groups.entries()].sort(([a],[b])=>a.localeCompare(b,'pt',{sensitivity:'base'})).filter(([name,photos])=>!query||name.toLocaleLowerCase('pt').includes(query)||photos.some(item=>String(item.name||'').toLocaleLowerCase('pt').includes(query)));
-      if(!entries.length){const empty=document.createElement('p');empty.className='archive-empty';empty.textContent=memories.length?'Não encontrei locais ou fotografias para esta pesquisa.':'As fotografias com localização vão aparecer aqui, organizadas por lugar.';root.appendChild(empty);return;}
-      entries.forEach(([name,photos])=>{
-        photos.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'pt',{sensitivity:'base'}));
-        const details=document.createElement('details'),summary=document.createElement('summary'),label=document.createElement('span'),count=document.createElement('span'),grid=document.createElement('div');
-        details.className='archive-place';details.dataset.place=normalize(name);label.textContent=name;count.className='archive-count';count.textContent=`${photos.length} ${photos.length===1?'fotografia':'fotografias'}`;summary.append(label,count);grid.className='archive-photos';
-        photos.forEach(item=>{const card=document.createElement('article'),image=document.createElement('img'),caption=document.createElement('span');card.className='archive-photo';image.src=imageUrl(item);image.alt=item.name||'Fotografia';image.loading='lazy';caption.textContent=item.name||'Fotografia';card.append(image,caption);grid.appendChild(card);});
-        details.append(summary,grid);root.appendChild(details);
-      });
-      if(window.__retalhosPendingLocation)openMatchingPlace({detail:{location:window.__retalhosPendingLocation}});
-    }catch(error){console.error('Arquivo por lugares:',error);root.textContent='Não foi possível carregar o arquivo por lugares.';}
-  }
-  async function init(){
-    try{const response=await fetch(URL_MUNICIPALITIES,{headers:{Accept:'application/geo+json'}});if(response.ok)municipalities=(await response.json()).features||[];}catch(error){console.warn('Não foi possível carregar os nomes dos concelhos:',error);}
-    render();window.addEventListener('retalhos-data-changed',render);
-    window.addEventListener('retalhos-open-location',event=>{window.__retalhosPendingLocation=event.detail?.location||'';openMatchingPlace(event);});
-  }
+  async function render(){try{const all=await getMemories(),located=all.filter(x=>Number.isFinite(x.lat)&&Number.isFinite(x.lng)||String(x.locationName||'').trim()),groups=new Map();located.forEach(item=>{const name=placeName(item);if(!groups.has(name))groups.set(name,[]);groups.get(name).push(item);});root.replaceChildren();const search=document.createElement('input');search.className='archive-search';search.type='search';search.placeholder='Procurar um lugar ou uma fotografia';search.setAttribute('aria-label','Procurar no arquivo por lugares');search.value=query;search.addEventListener('input',()=>{query=search.value.trim().toLocaleLowerCase('pt');render();});root.appendChild(search);const entries=[...groups.entries()].sort(([a],[b])=>a.localeCompare(b,'pt',{sensitivity:'base'})).filter(([n,photos])=>!query||n.toLocaleLowerCase('pt').includes(query)||photos.some(x=>String(x.name||'').toLocaleLowerCase('pt').includes(query)));if(!entries.length){const empty=document.createElement('p');empty.className='archive-empty';empty.textContent=located.length?'Não encontrei locais ou fotografias para esta pesquisa.':'As fotografias com localização vão aparecer aqui, organizadas por lugar.';root.appendChild(empty);return;}entries.forEach(([name,photos])=>{photos.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'pt',{sensitivity:'base'}));const d=document.createElement('details'),s=document.createElement('summary'),label=document.createElement('span'),count=document.createElement('span'),grid=document.createElement('div');d.className='archive-place';d.dataset.place=norm(name);label.textContent=name;count.className='archive-count';count.textContent=`${photos.length} ${photos.length===1?'fotografia':'fotografias'}`;s.append(label,count);grid.className='archive-photos';photos.forEach(item=>{const card=document.createElement('article'),img=document.createElement('img'),caption=document.createElement('span');card.className='archive-photo';img.src=imageUrl(item);img.alt=item.name||'Fotografia';img.loading='lazy';caption.textContent=item.name||'Fotografia';card.append(img,caption);grid.appendChild(card);});d.append(s,grid);root.appendChild(d);});if(window.__retalhosPendingLocation)openMatching({detail:{location:window.__retalhosPendingLocation}});}catch(e){console.error('Arquivo por lugares:',e);root.textContent='Não foi possível carregar o arquivo por lugares.';}}
+  function openMatching(event){const wanted=norm(event.detail?.location);if(!wanted)return;const drawer=document.getElementById('archiveDrawer');if(drawer)drawer.open=true;requestAnimationFrame(()=>{const list=[...root.querySelectorAll('.archive-place')],match=list.find(x=>norm(x.dataset.place)===wanted)||list.find(x=>norm(x.dataset.place).includes(wanted)||wanted.includes(norm(x.dataset.place)));if(match){match.open=true;match.classList.add('archive-highlight');match.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>match.classList.remove('archive-highlight'),1200);}else document.querySelector('.location-index-section')?.scrollIntoView({behavior:'smooth',block:'center'});});}
+  async function init(){try{const r=await fetch(URL_MUNICIPALITIES,{headers:{Accept:'application/geo+json'}});if(r.ok)municipalities=(await r.json()).features||[];}catch(e){console.warn('Nomes de concelhos indisponíveis:',e);}render();window.addEventListener('retalhos-data-changed',render);window.addEventListener('retalhos-open-location',e=>{window.__retalhosPendingLocation=e.detail?.location||'';openMatching(e);});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

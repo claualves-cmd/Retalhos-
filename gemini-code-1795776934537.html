@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f0e6">
+  <meta name="description" content="Um mapa feito de passos, encontros e lugares que ficaram contigo.">
+  <title>Retalhos — O mundo feito de memórias</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="./estilos.css?v=15">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Retalhos, início">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span><strong>RETALHOS</strong><small>O MUNDO FEITO DE MEMÓRIAS</small></span>
+      </a>
+      <div class="view-selector-wrap">
+        <label for="coverSelect">Vista</label>
+        <select id="coverSelect" class="view-selector" aria-label="Escolher vista do mapa">
+          <option value="">As minhas vistas</option>
+        </select>
+        <button id="manageViews" class="icon-button" type="button" title="Gerir vistas" aria-label="Gerir vistas">⋯</button>
+      </div>
+    </header>
+
+    <div id="viewManager" class="view-manager" hidden>
+      <strong>As minhas vistas</strong>
+      <div id="customViewList" class="custom-view-list"></div>
+      <button id="saveCurrentView" type="button">Guardar enquadramento atual</button>
+    </div>
+
+    <section class="retalhos-layout" id="inicio">
+      <div class="map-column">
+        <section class="map-section" aria-label="Mapa de satélite e memórias">
+          <div id="map" role="application" aria-label="Mapa de satélite. Arrasta para explorar e aproxima com dois dedos."></div>
+          <div class="map-control-bar">
+            <div class="map-count"><span class="live-dot"></span><strong id="mapStatus">0 RETALHOS NO MAPA</strong></div>
+            <button id="saveCover" type="button">Guardar vista</button>
+            <button id="placePatch" type="button">Colocar retalho</button>
+            <button id="deleteSelectedPatch" type="button" class="danger-soft">Apagar retalho</button>
+          </div>
+        </section>
+
+        <section id="joinSection" class="join-section" aria-labelledby="joinTitle">
+          <h2 id="joinTitle">Juntar mais retalhos</h2>
+          <div class="join-actions">
+            <button id="galleryImport" type="button">＋ Galeria</button>
+            <button id="cameraImport" type="button">Câmara</button>
+          </div>
+        </section>
+
+        <input id="photoInput" type="file" accept="image/*" multiple hidden>
+        <input id="rethosCameraInput" type="file" accept="image/*" capture="environment" hidden>
+
+        <section id="pendingSection" class="pending-section" hidden>
+          <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
+          <div id="pendingList" class="pending-list"></div>
+        </section>
+
+        <section class="location-index-section" aria-label="Índice alfabético de locais">
+          <h3>Índice alfabético de locais</h3>
+          <p>As fotografias organizadas por local.</p>
+          <div id="locationIndex"></div>
+        </section>
+      </div>
+
+      <aside class="achievements-panel" aria-labelledby="achievementsTitle">
+        <h2 id="achievementsTitle">As minhas conquistas</h2>
+        <p class="achievements-intro">Um mapa feito de passos, encontros e lugares que ficaram contigo.</p>
+        <dl class="achievements-list">
+          <div><dt id="districtCount">0 de 18 distritos</dt><dd>Distritos</dd></div>
+          <div><dt id="municipalityCount">0 de 308 concelhos</dt><dd>Concelhos</dd></div>
+          <div><dt id="villageCount">0</dt><dd>Aldeias e lugares</dd></div>
+          <div><dt id="beachCount">0</dt><dd>Praias</dd></div>
+          <div><dt id="mountainCount">0</dt><dd>Serras</dd></div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="memory-section" id="memorias" hidden>
+      <div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div></div>
+      <div id="gallery" class="gallery-grid"></div>
+    </section>
+
+    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 0.7</span></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
+  <script src="./retalho-markers.js"></script>
+  <script src="./app-controls.js"></script>
+  <script src="./app.js"></script>
+  <script src="./app-enhancements.js"></script>
+  <script src="./location-index.js"></script>
+</body>
+</html>

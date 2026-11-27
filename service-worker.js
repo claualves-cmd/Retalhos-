@@ -1,12 +1,10 @@
-const CACHE_NAME = 'retalhos-shell-v15';
+const CACHE_NAME = 'retalhos-shell-v16';
 const APP_SHELL = [
   './',
   './index.html',
   './estilos.css',
-  './app.js',
   './app-controls.js',
-  './app-enhancements.js',
-  './retalho-markers.js',
+  './map-bootstrap.js',
   './location-index.js',
   './manifest.json',
   './icon-192.svg',
@@ -16,8 +14,6 @@ const APP_SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // Cache the files that are available; one optional file must not block the
-    // service worker update for the entire app.
     await Promise.allSettled(APP_SHELL.map(path => cache.add(path)));
     await self.skipWaiting();
   })());

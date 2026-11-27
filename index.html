@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4f0e6">
-  <meta name="description" content="Portugal está cheio de histórias. Começa a preencher o mapa com as tuas.">
+  <meta name="description" content="Um mapa feito de passos, encontros e lugares que ficaram contigo.">
   <title>Retalhos — O mundo feito de memórias</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" href="./icon-192.png">
@@ -12,38 +12,97 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
-  <link rel="stylesheet" href="./estilos.css?v=13">
-  <link rel="stylesheet" href="./recursos.css?v=13">
+  <link rel="stylesheet" href="./estilos.css?v=14">
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Retalhos, início"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span><strong>RETALHOS</strong><small>O MUNDO FEITO DE MEMÓRIAS</small></span></a>
+      <a class="brand" href="#inicio" aria-label="Retalhos, início">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span><strong>RETALHOS</strong><small>O MUNDO FEITO DE MEMÓRIAS</small></span>
+      </a>
+      <div class="view-selector-wrap">
+        <label for="coverSelect">Vista</label>
+        <select id="coverSelect" class="view-selector" aria-label="Escolher vista do mapa">
+          <option value="portugal">Portugal</option>
+          <option value="france">França</option>
+          <option value="morocco">Marrocos</option>
+          <option value="world">Mundo</option>
+        </select>
+        <button id="manageViews" class="icon-button" type="button" title="Gerir vistas" aria-label="Gerir vistas">⋯</button>
+      </div>
       <button id="installBtn" class="install-btn" hidden>Instalar app</button>
     </header>
-    <section class="intro" id="inicio"><p class="eyebrow">O TEU MUNDO. A TUA HISTÓRIA.</p><h1>O mundo visto do espaço.<br><em>O mundo feito de memórias.</em></h1><p class="intro-copy">Cada fotografia guarda um lugar. Cada lugar acrescenta um retalho à tua história.</p></section>
-    <section class="map-section" aria-label="Mapa de satélite e memórias">
-      <div class="map-heading"><div><span class="live-dot"></span><span id="mapStatus">PORTUGAL À ESPERA DAS TUAS MEMÓRIAS</span></div><div class="map-heading-actions"><label class="cover-label" for="coverSelect">CAPA</label><select id="coverSelect" aria-label="Escolher capa do mapa"><option value="portugal">Portugal</option><option value="world">Mundo</option><option value="azores">Açores</option><option value="madeira">Madeira</option><option value="france">França</option><option value="morocco">Marrocos</option><option value="custom">Vista atual</option></select><button id="saveCover" class="map-tool" type="button" title="Guardar a vista atual como capa">Guardar vista</button></div></div>
-      <div id="welcomePanel" class="welcome-panel"><strong>Portugal está cheio de histórias.</strong><span>Começa a preencher o mapa com as tuas.</span><button id="welcomeImport" type="button">Adicionar as primeiras fotografias</button></div>
-      <div id="map" role="application" aria-label="Mapa de satélite. Arrasta para explorar e aproxima com dois dedos."></div>
-      <div class="map-bottomline"><span id="mapHint">As zonas sem fotografias mostram o território por satélite.</span><button id="resetView" class="map-tool" type="button" title="Voltar à capa">Voltar à capa</button></div>
-      <div class="map-legend"><span><i class="legend-photo"></i> Retalhos de fotografias</span><span><i class="legend-satellite"></i> Locais ainda por descobrir</span></div>
+
+    <div id="viewManager" class="view-manager" hidden>
+      <strong>As minhas vistas</strong>
+      <div id="customViewList" class="custom-view-list"></div>
+      <button id="saveCurrentView" type="button">Guardar enquadramento atual</button>
+    </div>
+
+    <section class="retalhos-layout" id="inicio">
+      <div class="map-column">
+        <section class="map-section" aria-label="Mapa de satélite e memórias">
+          <div id="welcomePanel" class="welcome-panel"><strong>Portugal está cheio de histórias.</strong><span>Começa a preencher o mapa com as tuas.</span></div>
+          <div id="map" role="application" aria-label="Mapa de satélite. Arrasta para explorar e aproxima com dois dedos."></div>
+          <div class="map-control-bar">
+            <div class="map-count"><span class="live-dot"></span><strong id="mapStatus">0 RETALHOS NO MAPA</strong></div>
+            <button id="saveCover" type="button">Guardar vista</button>
+            <button id="placePatch" type="button">Colocar retalho</button>
+            <button id="deleteSelectedPatch" type="button" class="danger-soft">Apagar retalho</button>
+          </div>
+        </section>
+
+        <section id="joinSection" class="join-section" aria-labelledby="joinTitle">
+          <h2 id="joinTitle">Juntar mais retalhos</h2>
+          <div class="join-actions">
+            <button id="galleryImport" type="button">＋ Galeria</button>
+            <button id="cameraImport" type="button">Câmara</button>
+          </div>
+        </section>
+
+        <input id="photoInput" type="file" accept="image/*" multiple hidden>
+        <input id="retalhosCameraInput" type="file" accept="image/*" capture="environment" hidden>
+
+        <section id="pendingSection" class="pending-section" hidden>
+          <div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div>
+          <div id="pendingList" class="pending-list"></div>
+        </section>
+
+        <section class="location-index-section" aria-label="Índice alfabético de locais">
+          <h3>Índice alfabético de locais</h3>
+          <p>As fotografias organizadas por local.</p>
+          <div id="locationIndex"></div>
+        </section>
+      </div>
+
+      <aside class="achievements-panel" aria-labelledby="achievementsTitle">
+        <p class="achievements-intro">Um mapa feito de passos, encontros e lugares que ficaram contigo.</p>
+        <h2 id="achievementsTitle">As minhas conquistas</h2>
+        <dl class="achievements-list">
+          <div><dt id="districtCount">0 de 18 distritos</dt><dd>Distritos</dd></div>
+          <div><dt id="municipalityCount">0 de 308 concelhos</dt><dd>Concelhos</dd></div>
+          <div><dt id="villageCount">0</dt><dd>Aldeias e lugares</dd></div>
+          <div><dt id="beachCount">0</dt><dd>Praias</dd></div>
+          <div><dt id="mountainCount">0</dt><dd>Serras</dd></div>
+        </dl>
+      </aside>
     </section>
-    <section class="workspace-tools" aria-label="Ferramentas da colcha"><div class="mode-switch" aria-label="Modo do mapa"><span>VER</span><button type="button" class="active" data-map-mode="colcha">Colcha</button><button type="button" data-map-mode="pins">Alfinetes</button></div><label class="year-filter">ANO<select id="yearFilter"><option value="all">Todas as memórias</option></select></label><button id="createPoster" type="button">Criar poster</button><button id="exportBackup" type="button">Exportar cópia</button><button id="importBackupButton" type="button">Importar cópia</button><input id="importBackup" type="file" accept=".zip,application/zip" hidden></section>
-    <section class="action-panel"><div class="selection-copy"><span class="eyebrow">A TUA COLCHA</span><strong id="selectedPlace">Importa as tuas memórias</strong><small id="selectedCoords">As fotografias com GPS encontram automaticamente o seu lugar.</small></div><label class="add-button" for="photoInput"><span class="plus">＋</span><span>Importar fotografias</span></label><input id="photoInput" type="file" accept="image/*" multiple hidden><p class="small-note">Podes selecionar muitas fotografias de uma só vez. As fotografias ficam guardadas neste dispositivo.</p></section>
-    <section id="pendingSection" class="pending-section" hidden><div class="section-heading"><div><span class="eyebrow">FALTA LOCALIZAR</span><h2>Fotografias sem GPS <span id="pendingCount">0</span></h2></div></div><p class="pending-intro">Seleciona uma ou várias fotografias e procura o lugar onde foram tiradas.</p><div id="recentPlaces" class="recent-places"></div><div class="place-search"><label for="placeSearch">LOCAL DA FOTOGRAFIA</label><div class="place-search-row"><input id="placeSearch" type="search" placeholder="Ex.: Praia das Maçãs, Sintra"><button id="searchPlace" type="button">Procurar</button></div><div id="placeResults" class="place-results"></div></div><div class="pending-bulk-actions"><label><input id="selectAllPending" type="checkbox"> Selecionar todas</label><button id="assignPlace" type="button" disabled>Atribuir local às selecionadas</button></div><div id="pendingList" class="pending-list"></div></section>
-    <section class="memory-section" id="memorias"><div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div><button id="clearMemories" class="text-button" title="Apagar todas as memórias">Apagar tudo</button></div><section class="location-index-section" aria-labelledby="locationIndexTitle"><h3 id="locationIndexTitle">Índice dos locais</h3><p>As fotografias localizadas ficam agrupadas por local, por ordem alfabética.</p><div id="locationIndex" class="location-index" aria-live="polite"></div></section><div id="gallery" class="gallery" hidden></div></section>
-    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 0.6</span></footer>
+
+    <section class="memory-section" id="memorias" hidden>
+      <div class="section-heading"><div><span class="eyebrow">O TEU ARQUIVO</span><h2>As minhas memórias <span id="memoryCount">0</span></h2></div></div>
+      <div id="gallery" class="gallery-grid"></div>
+    </section>
+
+    <footer><span class="footer-mark">R.</span><span>RETALHOS · UM LUGAR, UMA MEMÓRIA</span><span class="version">PROTÓTIPO 0.7</span></footer>
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="./retalho-markers.js"></script>
-  <script src="./retalhos-recursos.js"></script>
   <script src="./app-controls.js"></script>
   <script src="./app.js"></script>
   <script src="./location-index.js"></script>

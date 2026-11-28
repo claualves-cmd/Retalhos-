@@ -1,4 +1,4 @@
-const CACHE_NAME = 'retalhos-shell-v34';
+const CACHE_NAME = 'retalhos-shell-v36';
 const ASSETS = [
   './',
   './index.html',

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f1e6" />
+  <title>Retalhos — O mundo feito de memórias</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="./estilos.css" />
+  <style>
+    .topbar{height:auto;min-height:84px;padding:16px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;border-bottom:1px solid rgba(47,90,75,.12)}
+    .topbar-tagline{max-width:560px;margin:0;color:#6f786f;font:italic 14px/1.45 Georgia,"Times New Roman",serif;text-align:center}
+    .import-date-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0;padding:10px 14px;border-radius:14px;background:#fbf9f3;border:1px solid rgba(47,90,75,.14);font-size:13px;color:#243028}
+    .import-date-bar input[type="date"]{padding:6px 10px;border-radius:10px;border:1px solid rgba(47,90,75,.25);background:#fff;color:#1f2a22;font:inherit}
+    .year-filter-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(47,90,75,.12)}
+    .year-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .year-pill{padding:6px 12px;border-radius:999px;border:1px solid rgba(47,90,75,.22);background:#fff;color:#26332a;font-size:12px;font-weight:600;cursor:pointer}
+    .year-pill.active{background:#2f5a4b;color:#fffdf7;border-color:#2f5a4b}
+    .print-quilt-overlay{position:fixed;inset:0;z-index:2000;background:#f5f1e6;color:#1f2a22;overflow:auto;padding:24px}
+    .print-quilt-overlay[hidden]{display:none}
+    .print-quilt-toolbar{max-width:1120px;margin:0 auto 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+    .print-quilt-sheet{max-width:1120px;margin:0 auto;background:#fffdf7;border:1px solid rgba(47,90,75,.18);border-radius:16px;padding:28px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+    .print-quilt-header{text-align:center;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid rgba(47,90,75,.16)}
+    .print-quilt-header h2{margin:0 0 6px;font-family:Georgia,"Times New Roman",serif;font-size:28px;color:#23332b}
+    .print-quilt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+    .print-quilt-tile{aspect-ratio:4 / 3;overflow:hidden;border-radius:3px;padding:2px;border:1px solid rgba(47,90,75,.18);background:#fffdf7;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+    .print-quilt-tile img{width:100%;height:100%;object-fit:cover;display:block;border-radius:1px}
+    @media(max-width:620px){
+      .topbar{height:auto;min-height:68px;padding:12px 0;gap:4px}
+      .topbar-tagline{max-width:92%;font-size:12px;line-height:1.35}
+      .print-quilt-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+      .print-quilt-sheet{padding:16px}
+    }
+    @media print{
+      body > :not(.print-quilt-overlay){display:none!important}
+      .print-quilt-overlay{position:static;padding:0;background:#fff}
+      .print-quilt-toolbar{display:none!important}
+      .print-quilt-sheet{box-shadow:none;border:0;border-radius:0;padding:0;max-width:none}
+      .print-quilt-grid{grid-template-columns:repeat(5,1fr);gap:6px}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+      <span>
+        <span class="brand-name">RETALHOS</span>
+        <span class="brand-sub">O MUNDO FEITO DE MEMÓRIAS</span>
+      </span>
+    </a>
+    <p class="topbar-tagline">Retalhos de viagens, dias e lugares que ficam na memória.</p>
+  </header>
+
+  <main class="page">
+    <section class="card map-card" aria-label="Mapa de retalhos">
+      <div id="map" class="map-canvas"></div>
+      <div class="map-footer">
+        <span id="mapStatus" class="map-status">PORTUGAL · OS TEUS RETALHOS</span>
+      </div>
+
+      <div class="import-date-bar">
+        <label for="importDateInput"><strong>Data na importação:</strong></label>
+        <input id="importDateInput" type="date" />
+        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+          <input id="forceImportDate" type="checkbox" />
+          <span>Usar esta data em todas as fotos deste lote</span>
+        </label>
+      </div>
+
+      <div class="action-row">
+        <button id="galleryImport" type="button" class="btn btn-primary">+ Galeria</button>
+        <button id="cameraImport" type="button" class="btn btn-secondary">Câmara</button>
+      </div>
+      <input id="photoInput" type="file" accept="image/*" multiple hidden />
+      <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden />
+
+      <div class="secondary-row">
+        <button id="saveCover" type="button" class="btn btn-ghost">Guardar vista</button>
+        <button id="resetCover" type="button" class="btn btn-ghost">Repor vista</button>
+        <button id="openQuiltPrint" type="button" class="btn btn-ghost">Imprimir manta</button>
+      </div>
+
+      <div class="year-filter-row">
+        <div id="yearPills" class="year-pills" aria-label="Filtrar por ano">
+          <button type="button" class="year-pill active" data-year="all">Todos os anos</button>
+        </div>
+        <span class="muted" id="activeYearLabel">A mostrar: Todos os anos</span>
+      </div>
+    </section>
+
+    <section id="pendingSection" class="card pending-card-box" hidden>
+      <div class="pending-head">
+        <h2>Fotografias por localizar (<span id="pendingCount">0</span>)</h2>
+        <label class="select-all">
+          <input id="selectAllPending" type="checkbox" />
+          <span>Selecionar todas</span>
+        </label>
+      </div>
+      <div id="pendingList" class="pending-grid"></div>
+      <div class="pending-assign">
+        <div class="pending-search-row">
+          <input id="pendingPlaceSearch" type="search" placeholder="Procurar local (ex.: Sintra, Açores, Madeira, Paris, Marrocos, Nantes, Salamanca)..." />
+          <button id="searchPendingPlace" type="button" class="btn btn-secondary">Procurar</button>
+        </div>
+        <div id="pendingPlaceResults" class="pending-results"></div>
+        <button id="assignPendingPlace" type="button" class="btn btn-primary" disabled>Atribuir local às selecionadas</button>
+      </div>
+    </section>
+
+    <section class="card stats-card" aria-label="Resumo do arquivo">
+      <div class="stats-grid">
+        <div class="stat-item"><strong id="placeCount">0</strong><span>Lugares</span></div>
+        <div class="stat-item"><strong id="municipalityCount">0 de 308</strong><span>Concelhos</span></div>
+        <div class="stat-item"><strong id="districtCount">0 de 18</strong><span>Distritos / Ilhas</span></div>
+        <div class="stat-item"><strong id="countryCount">0</strong><span>Países</span></div>
+        <div class="stat-item"><strong id="locatedPhotoCount">0</strong><span>Localizadas</span></div>
+        <div class="stat-item"><strong id="unlocatedPhotoCount">0</strong><span>Por localizar</span></div>
+      </div>
+      <div class="backup-row">
+        <button id="exportBackup" type="button" class="btn btn-ghost">Exportar cópia</button>
+        <button id="importBackup" type="button" class="btn btn-ghost">Repor cópia</button>
+        <input id="backupInput" type="file" accept="application/json,.json" hidden />
+      </div>
+    </section>
+
+    <section class="card archive-card" aria-label="O teu arquivo, por lugares">
+      <div class="archive-header">
+        <h2>O teu arquivo, por lugares</h2>
+      </div>
+      <div id="archiveDrawerContent"></div>
+    </section>
+  </main>
+
+  <div id="quiltPrintModal" class="print-quilt-overlay" hidden>
+    <div class="print-quilt-toolbar">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <label for="printYearSelect"><strong>Ano da manta:</strong></label>
+        <select id="printYearSelect" style="padding:7px 12px;border-radius:10px;border:1px solid rgba(47,90,75,.25);background:#fff;">
+          <option value="all">Todos os anos</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button id="triggerPrintQuilt" type="button" class="btn btn-primary">Imprimir / Guardar PDF</button>
+        <button id="closeQuiltPrint" type="button" class="btn btn-ghost">Fechar</button>
+      </div>
+    </div>
+    <article class="print-quilt-sheet">
+      <header class="print-quilt-header">
+        <h2 id="printQuiltTitle">Manta de Retalhos</h2>
+        <p id="printQuiltMeta" class="muted" style="margin:0;"></p>
+      </header>
+      <div id="printQuiltGrid" class="print-quilt-grid"></div>
+    </article>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js" crossorigin=""></script>
+  <script src="https://unpkg.com/exifr/dist/full.umd.js" crossorigin=""></script>
+  <script src="./app-controls.js"></script>
+  <script src="./location-stats.js"></script>
+</body>
+</html>
